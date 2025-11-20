@@ -1,17 +1,28 @@
 const express = require("express");
-const app = express();
 const connectDB = require("./config/db");
+const cookieParser = require("cookie-parser");
+const { userAuth } = require("./middleware/auth");
 
-app.use("/", (req, res) => {
-  res.send("Hello from Express server");
-});
+const app = express();
+
+app.use(express.json());
+app.use(cookieParser());
+
+
+const authRouter = require("./routes/auth");
+const profileRouter = require("./routes/profile");
+const requestRouter = require("./routes/request");
+
+app.use("/", authRouter);
+app.use("/", userAuth, profileRouter);
+app.use("/", userAuth, requestRouter);
 
 
 connectDB()
   .then(() => {
     console.log("Database connection seccesful ...");
-    app.listen(6666, () => {
-      console.log("server runnig on 6666....");
+    app.listen(3000, () => {
+      console.log("server runnig on 3000....");
     });
   })
   .catch((err) => {
@@ -19,5 +30,5 @@ connectDB()
       "database can't be connected:",
       err && err.message ? err.message : err
     );
-    process.exit(1); // => optional: exit so nodemon can restart on changes
+    process.exit(1); // optional: exit so nodemon can restart on changes
   });
