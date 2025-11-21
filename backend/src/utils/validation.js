@@ -51,6 +51,26 @@ const isignUpValidtion = (req) => {
     }
 };  
 
+const validatedEditProfiledata = (req) => {
+  const allowedValidateFields = [
+    "first_name",
+    "last_name",
+    "email",
+    "age",
+    "gender",
+    "skills",
+    "photoURL",
+    "about",
+  ];
+
+  const isEditAllowed = Object.keys(req.body).every((filed) =>
+    allowedValidateFields.includes(filed)
+  );
+
+  return isEditAllowed;
+};
+
 module.exports = {
-    isignUpValidtion
+    isignUpValidtion,
+    validatedEditProfiledata
 };
