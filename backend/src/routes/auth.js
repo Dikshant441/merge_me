@@ -1,5 +1,5 @@
 const express = require("express");
-const User = require("../modules/user");
+const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const { isignUpValidtion } = require("../utils/validation");
 
@@ -13,7 +13,7 @@ authRouter.post("/signup", async (req, res) => {
 
     // 2. => Encrypt data
     const hashpassword = await bcrypt.hash(password, 10);
-    console.log("hashpassword:", hashpassword);
+
 
     // 3. => create a new instance of user model
     const user = new User({
@@ -24,6 +24,7 @@ authRouter.post("/signup", async (req, res) => {
     });
 
     await user.save();
+      console.log("44444");
 
     res.send("User added successfully");
   } catch (error) {
@@ -64,6 +65,22 @@ authRouter.post("/login", async (req, res) => {
     console.error(error);
     res.status(400).send(error.message);
   }
+});
+
+
+authRouter.post("/logout", async (req, res) => {
+  try{
+    res
+    .cookie("token", null, {
+      expires: new Date(Date.now()),
+    })
+    .send("Logout successful");
+
+  }catch (error) {
+    console.error(error);
+    res.status(400).send(error.message);
+  }
+  
 });
 
 module.exports = authRouter;
