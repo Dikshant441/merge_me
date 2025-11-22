@@ -13,10 +13,9 @@
 
 
 ## connectionRequestRoutes
-- POST/request/send/intrested/:userId
-- POST/request/ignore/:userId
-- POST/request/review/accept/:requestId
-- POST/request/review/reject/:requestId
+- POST/request/send/:status//:userId  => status = [intrested , ignored]
+- 
+- POST/request/review/:status/:requestId =>  => status = [accepted  , rejected]
 
 ## userRoutes
 - GET/user/connection

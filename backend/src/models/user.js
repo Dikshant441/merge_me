@@ -86,6 +86,6 @@ userSchema.methods.validationPassword = async function (inputPassword) {
     return isPasswordvalid;
 };
 
-const User = mongoose.model("User", userSchema);
+const Usermodel = mongoose.model("User", userSchema);
 
-module.exports = User;
+module.exports = Usermodel;

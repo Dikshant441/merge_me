@@ -1,5 +1,5 @@
 const express = require("express");
-const User = require("../models/user");
+const Usermodel = require("../models/user");
 const bcrypt = require("bcrypt");
 const { isignUpValidtion } = require("../utils/validation");
 
@@ -16,7 +16,7 @@ authRouter.post("/signup", async (req, res) => {
 
 
     // 3. => create a new instance of user model
-    const user = new User({
+    const user = new Usermodel({
       first_name: first_name,
       last_name: last_name,
       email: email,
@@ -24,7 +24,6 @@ authRouter.post("/signup", async (req, res) => {
     });
 
     await user.save();
-      console.log("44444");
 
     res.send("User added successfully");
   } catch (error) {
@@ -45,7 +44,6 @@ authRouter.post("/login", async (req, res) => {
 
     // 2. => compare password
     const isPasswordMatch = await user.validationPassword(password);
-    console.log("isPasswordMatch:", isPasswordMatch);
 
     if (isPasswordMatch) {
       // 2.1 => create query token (JWT or session)

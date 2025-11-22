@@ -2,11 +2,8 @@ const validator = require("validator");
 
 const isignUpValidtion = (req) => {
     const { first_name, last_name, email, password, age, gender , skills} = req.body;
-        console.log("skills:", skills);
-
 
     const allowedGenders = ["male", "female", "other"];
-
 
     if (!first_name || !last_name || !email || !password) {
         throw new Error("First name, last name, email, and password are required.");
