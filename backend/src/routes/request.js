@@ -67,9 +67,7 @@ requestRouter.post(
   async (req, res) => {
     try {
       const loggedInUser = req.user;
-      console.log(loggedInUser);
       const { status, requestId } = req.params;
-      console.log(status, requestId);
 
       const allowedStatus = ["accepted", "rejected"];
       if (!allowedStatus.includes(status)) {
@@ -91,7 +89,6 @@ requestRouter.post(
       connectionRequest.status = status;
 
       const data = await connectionRequest.save();
-      console.log("datatatatatata", data);
 
       res.json({ message: "Connection request " + status, data });
     } catch (err) {

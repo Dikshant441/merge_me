@@ -4,10 +4,12 @@ const connectionrequestSchema = new mongoose.Schema(
   {
     fromUserId: {
       type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     toUserId: {
       type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     status: {
@@ -24,7 +26,7 @@ const connectionrequestSchema = new mongoose.Schema(
   }
 );
 
-connectionrequestSchema.index({fromUserId : 1, toUserId: 1});
+connectionrequestSchema.index({ fromUserId: 1, toUserId: 1 });
 
 connectionrequestSchema.pre("save", function () {
   const connectionRequest = this;
