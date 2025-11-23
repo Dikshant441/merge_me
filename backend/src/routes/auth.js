@@ -14,7 +14,6 @@ authRouter.post("/signup", async (req, res) => {
     // 2. => Encrypt data
     const hashpassword = await bcrypt.hash(password, 10);
 
-
     // 3. => create a new instance of user model
     const user = new Usermodel({
       first_name: first_name,
@@ -35,9 +34,8 @@ authRouter.post("/signup", async (req, res) => {
 authRouter.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
-
     // 1. => check if user exists
-    const user = await User.findOne({ email: email });
+    const user = await Usermodel.findOne({ email: email });
     if (!user) {
       throw new Error(" Invalid credentials " + email);
     }
@@ -51,12 +49,11 @@ authRouter.post("/login", async (req, res) => {
 
       // 2.2 => add the token to cookie and send the response back to the user
       res.cookie("token", token, {
-        expires: new Date(Date.now() + 1 * 3600000) // cookie will be removed after 1 h,
+        expires: new Date(Date.now() + 1 * 3600000), // cookie will be removed after 1 h,
       });
-      
+
       res.send("Login successful");
-    }
-    else{
+    } else {
       throw new Error("Invalid credentials");
     }
   } catch (error) {
@@ -65,20 +62,17 @@ authRouter.post("/login", async (req, res) => {
   }
 });
 
-
 authRouter.post("/logout", async (req, res) => {
-  try{
+  try {
     res
-    .cookie("token", null, {
-      expires: new Date(Date.now()),
-    })
-    .send("Logout successful");
-
-  }catch (error) {
+      .cookie("token", null, {
+        expires: new Date(Date.now()),
+      })
+      .send("Logout successful");
+  } catch (error) {
     console.error(error);
     res.status(400).send(error.message);
   }
-  
 });
 
 module.exports = authRouter;
