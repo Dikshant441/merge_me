@@ -1,8 +1,8 @@
 
-
 function App() {
-  return <div>
-    hello worls!!
+  return <div className="text-pink-500">
+    mergeme!!
+    
   </div>;
 }
 
