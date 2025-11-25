@@ -5,9 +5,10 @@ import Footer from './Footer'
 
 const Body = () => {
   return (
-    <div>
+    <div className=''>
       <Navbar />
-      <Outlet/>
+      <Outlet
+      />
       <Footer/>
     </div>
   )
