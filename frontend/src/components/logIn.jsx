@@ -8,7 +8,8 @@ import { BASEURL } from "../utils/constants";
 
 const LogIn = () => {
   const [email, setEmail] = useState("trump@gmail.com");
-  const [password, setPassword] = useState("Trump123@");
+  const [password, setPassword] = useState("Trump@123");
+  const [error, setError] = useState(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -28,6 +29,7 @@ const LogIn = () => {
       return navigate("/feed");
     } catch (error) {
       console.error("Login failed:", error);
+      setError("Login failed: " + (error.response?.data || error.message));
     }
   };
 
@@ -54,12 +56,13 @@ const LogIn = () => {
             <span className="label-text font-medium">Password</span>
           </label>
           <input
-            type="password"
+            type="text"
             className="input input-bordered w-full"
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+          <p className="text-red-500">{error}</p>
 
           <button className="btn btn-neutral w-full mt-5" onClick={handleLogin}>
             Login
