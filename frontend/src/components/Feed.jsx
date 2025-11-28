@@ -32,7 +32,11 @@ const Feed = () => {
     getFeed();
   }, []);
 
-  return <div className="">{feed && <UserCard user={feed[0]} />}</div>;
+  if(!feed || feed.length===0){
+    return <div className="mt-20">No more users in feed</div>;
+  }
+
+  return <div className="mt-20">feed page {feed && <UserCard user={feed[0]} />}</div>;
 };
 
 export default Feed;
