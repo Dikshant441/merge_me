@@ -21,8 +21,8 @@ const Navbar = () => {
       dispatch(removeUser());
       dispatch(removeFeed());
       dispatch(removeConnections());
-      dispatch(removeRequest())
-      return navigate("/login");
+      // dispatch(removeRequest());
+      navigate("/login");
     } catch (error) {
       console.error("Logout failed:", error);
     }

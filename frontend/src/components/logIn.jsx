@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { BASEURL } from "../utils/constants";
 
 const Login = () => {
@@ -10,10 +10,11 @@ const Login = () => {
   const [password, setPassword] = useState("Trump@123");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [isLoginForm, setIsLoginForm] = useState(true);
   const [error, setError] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isLoginForm = location.pathname === "/login";
 
   const handleLogin = async () => {
     try {
@@ -33,8 +34,29 @@ const Login = () => {
     }
   };
 
+  const handleSignUp = async () => {
+    try {
+      const res = await axios.post(
+        BASEURL + "/signup",
+        {
+          first_name: firstName,
+          last_name: lastName,
+          email,
+          password,
+        },
+        { withCredentials: true }
+      );
+      console.log("Signup response:", res);
+      dispatch(addUser(res.data.data));
+      return navigate("/feed");
+    } catch (err) {
+      console.error("Signup failed:", err);
+      setError("Signup failed: " + (err.response?.data || err.message));
+    }
+  };
+
   return (
-    <div className="flex justify-center my-10">
+    <div className="flex justify-center my-20">
       <div className="card bg-base-300 w-96 shadow-xl">
         <div className="card-body">
           <h2 className="card-title justify-center">
@@ -102,7 +124,9 @@ const Login = () => {
 
           <p
             className="m-auto cursor-pointer py-2"
-            onClick={() => setIsLoginForm((value) => !value)}
+            onClick={() => {
+              navigate(isLoginForm ? "/signup" : "/login");
+            }}
           >
             {isLoginForm
               ? "New User? Signup Here"

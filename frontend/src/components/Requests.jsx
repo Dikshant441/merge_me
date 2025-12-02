@@ -35,16 +35,16 @@ const Requests = () => {
     }
   };
 
-   useEffect(() => {
+  useEffect(() => {
     fetchRequests();
   }, []);
 
   if (!requests) return;
 
   if (requests.length === 0)
-    return <h1 className="flex justify-center my-10"> No Requests Found</h1>;
+    return <h1 className="flex justify-center mt-20"> No Requests Found</h1>;
 
-return (
+  return (
     <div className="text-center my-10">
       <h1 className="text-bold text-white text-3xl">Connection Requests</h1>
 
@@ -92,4 +92,3 @@ return (
   );
 };
 export default Requests;
-

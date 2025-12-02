@@ -28,7 +28,8 @@ const Connections = () => {
 
   if (!connections) return;
 
-  if (connections.length === 0) return <h1> No Connections Found</h1>;
+  if (connections.length === 0)
+    return <h1 className="mt-20 flex justify-center"> No Connections Found</h1>;
 
   return (
     <div className="text-center my-10">
