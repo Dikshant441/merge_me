@@ -8,14 +8,14 @@ import { Link } from "react-router";
 
 const Connections = () => {
   const dispatch = useDispatch();
-  const connections = useSelector((store) => store.connections);
+  const connections = useSelector((store) => store?.connections);
 
   const fetchConnections = async () => {
     try {
       const res = await axios.get(BASEURL + "/user/connections", {
         withCredentials: true,
       });
-      dispatch(addConnections(res.data.data));
+      dispatch(addConnections(res.data?.data));
     } catch (err) {
       // Handle Error Case
       console.error(err);
