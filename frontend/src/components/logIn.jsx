@@ -17,6 +17,7 @@ const Login = () => {
   const isLoginForm = location.pathname === "/login";
 
   const handleLogin = async () => {
+    console.log("is this wokrn ");
     try {
       const res = await axios.post(
         BASEURL + "/login",
@@ -26,8 +27,9 @@ const Login = () => {
         },
         { withCredentials: true }
       );
+      console.log("Login response:", res);
       dispatch(addUser(res.data));
-      return navigate("/feed");
+      return navigate("/");
     } catch (error) {
       console.error("Login failed:", error);
       setError("Login failed: " + (error.response?.data || error.message));
@@ -48,7 +50,7 @@ const Login = () => {
       );
       console.log("Signup response:", res);
       dispatch(addUser(res.data.data));
-      return navigate("/feed");
+      return navigate("/");
     } catch (err) {
       console.error("Signup failed:", err);
       setError("Signup failed: " + (err.response?.data || err.message));

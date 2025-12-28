@@ -62,7 +62,7 @@ const Navbar = () => {
                   <Link to="/connections">Connections</Link>
                 </li>
                 <li>
-                  <Link to="/feed">Feed</Link>
+                  <Link to="/">Feed</Link>
                 </li>
                 <li>
                   <Link to="/requests">Requests</Link>
