@@ -10,7 +10,7 @@ const userAuth = async (req, res, next) => {
     }
 
     // validate the token
-    const decodeMessage = await jwt.verify(token, "learn_nodejs");
+    const decodeMessage = await jwt.verify(token, process.env.JWT_SECRET);
     if (!decodeMessage) {
       res.status(401).send("User not authorized");
     }

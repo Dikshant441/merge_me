@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const connectDB = require("./config/db");
 const cookieParser = require("cookie-parser");
@@ -5,6 +6,7 @@ const { userAuth } = require("./middleware/auth");
 const cors = require("cors");
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.use(
   cors({
@@ -28,8 +30,8 @@ app.use("/", userAuth, userRouter);
 connectDB()
   .then(() => {
     console.log("Database connection seccesful ...");
-    app.listen(3000, () => {
-      console.log("server runnig on 3000....");
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}...`);
     });
   })
   .catch((err) => {
