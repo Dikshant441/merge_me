@@ -32,11 +32,16 @@ const Feed = () => {
     getFeed();
   }, []);
 
-  if(!feed || feed.length===0){
+  if (!feed || feed.length === 0) {
     return <div className="mt-20">No more users in feed</div>;
   }
 
-  return <div className="mt-20">feed page {feed && <UserCard user={feed[0]} />}</div>;
+  return (
+    <div className="flex justify-center my-10">
+      {" "}
+      {feed && <UserCard user={feed[0]} />}
+    </div>
+  );
 };
 
 export default Feed;

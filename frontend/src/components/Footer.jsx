@@ -2,8 +2,8 @@ import React from "react";
 
 const Footer = () => {
   return (
-    <div>
-      <footer className="footer footer-horizontal footer-center bg-gray-500 text-primary-content p-5 fixed bottom-0 w-full">
+    <div className="mb-0">
+      <footer className="footer footer-horizontal footer-center bg-gray-500 text-primary-content p-5 bottom-0 w-full">
         <aside>
           <p className="font-bold">
             ACME Industries Ltd.
