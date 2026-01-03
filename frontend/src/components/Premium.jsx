@@ -9,14 +9,53 @@ import {
   Shield,
   MessageSquare,
   Infinity,
+  Contact,
 } from "lucide-react";
+import axios from "axios";
+import { BASEURL } from "../utils/constants";
 
 const Premium = () => {
+  const handleBuyClick = async (plan) => {
+    try {
+      const response = await axios.post(
+        BASEURL + "/payment/create",
+        {
+          membershipType: plan,
+        },
+        { withCredentials: true }
+      );
+
+      const { key_id, amount, currency, orderId, notes } = response.data;
+      console.log(response.data);
+
+      const options = {
+        key: key_id,
+        amount: amount,
+        currency: currency,
+        name: "Merge me",
+        description: "Test Transaction",
+        order_id: orderId,
+        prefill: {
+          name: (notes?.firstName || "Dishant") + " " + (notes?.lastName || "singh"),
+          email: notes?.emailId || "dishantsingh441@gmail.com", 
+          contact: "9876543212",
+          membershipType: notes?.membershipType || "",
+        },
+        theme: {
+          color: "#F37254",
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (error) {
+      console.error("Payment failed:", error);
+    }
+  };
+
   return (
     <div className="min-h-screen w-full relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Floating orbs */}
         <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
         <div
           className="absolute top-40 right-20 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl animate-pulse"
@@ -27,7 +66,6 @@ const Premium = () => {
           style={{ animationDelay: "2s" }}
         />
 
-        {/* Grid pattern overlay */}
         <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
@@ -37,7 +75,6 @@ const Premium = () => {
           }}
         />
 
-        {/* Floating sparkles */}
         <Sparkles
           className="absolute top-32 left-1/4 w-6 h-6 text-amber-400/40 animate-bounce"
           style={{ animationDuration: "3s" }}
@@ -52,9 +89,7 @@ const Premium = () => {
         />
       </div>
 
-      {/* Content */}
       <div className="relative z-10 py-16 px-4 md:px-8">
-        {/* Header Section */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-6">
             <Sparkles className="w-4 h-4 text-amber-400" />
@@ -73,19 +108,14 @@ const Premium = () => {
           </p>
         </div>
 
-        {/* Pricing Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto items-stretch">
-          {/* Free Plan */}
           <div className="group relative h-full">
             <div className="absolute inset-0 bg-gradient-to-b from-slate-500/20 to-transparent rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
             <div className="relative h-full flex flex-col bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 p-8 transition-all duration-500 hover:border-white/20 hover:bg-white/10 hover:-translate-y-2">
-              {/* Icon */}
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center mb-6 shadow-lg">
                 <User className="w-7 h-7 text-slate-200" />
               </div>
-
-              {/* Plan Info */}
               <div className="mb-8">
                 <h3 className="text-2xl font-bold text-white mb-2">Basic</h3>
                 <p className="text-slate-400 text-sm">
@@ -93,7 +123,6 @@ const Premium = () => {
                 </p>
               </div>
 
-              {/* Price */}
               <div className="mb-8">
                 <div className="flex items-baseline gap-1">
                   <span className="text-4xl font-black text-white">Free</span>
@@ -103,7 +132,6 @@ const Premium = () => {
                 </p>
               </div>
 
-              {/* Features */}
               <div className="space-y-4 mb-8 flex-grow">
                 <div className="flex items-center gap-3">
                   <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
@@ -148,24 +176,20 @@ const Premium = () => {
                 </div>
               </div>
 
-              {/* Button */}
               <button className="mt-auto w-full py-4 px-6 rounded-xl bg-white/5 border border-white/20 text-white font-semibold transition-all duration-300 hover:bg-white/10 hover:border-white/30">
                 Current Plan
               </button>
             </div>
           </div>
 
-          {/* Silver Plan */}
           <div className="group relative h-full">
             <div className="absolute inset-0 bg-gradient-to-b from-slate-400/30 to-transparent rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
             <div className="relative h-full flex flex-col bg-gradient-to-br from-slate-100/10 to-slate-200/5 backdrop-blur-xl rounded-3xl border border-slate-300/30 p-8 transition-all duration-500 hover:border-slate-300/50 hover:-translate-y-2">
-              {/* Silver shimmer effect */}
-              <div className="absolute inset-0 rounded-3xl overflow-hidden">
+              <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
               </div>
 
-              {/* Badge */}
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                 <div className="px-4 py-1.5 rounded-full bg-gradient-to-r from-slate-400 to-slate-500 text-white text-xs font-bold shadow-lg flex items-center gap-1.5">
                   <Star className="w-3 h-3 fill-current" />
@@ -173,18 +197,14 @@ const Premium = () => {
                 </div>
               </div>
 
-              {/* Icon */}
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-400 to-slate-600 flex items-center justify-center mb-6 shadow-lg shadow-slate-500/20 mt-2">
                 <Star className="w-7 h-7 text-white fill-current" />
               </div>
-
-              {/* Plan Info */}
               <div className="mb-8">
                 <h3 className="text-2xl font-bold text-white mb-2">Silver</h3>
                 <p className="text-slate-400 text-sm">Expand your reach</p>
               </div>
 
-              {/* Price */}
               <div className="mb-8">
                 <div className="flex items-baseline gap-1">
                   <span className="text-4xl font-black text-white">$9</span>
@@ -195,7 +215,6 @@ const Premium = () => {
                 </p>
               </div>
 
-              {/* Features */}
               <div className="space-y-4 mb-8 flex-grow relative">
                 <div className="flex items-center gap-3">
                   <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
@@ -242,7 +261,10 @@ const Premium = () => {
               </div>
 
               {/* Button */}
-              <button className="mt-auto w-full py-4 px-6 rounded-xl bg-gradient-to-r from-slate-600 to-slate-700 text-white font-semibold transition-all duration-300 hover:from-slate-500 hover:to-slate-600 shadow-lg shadow-slate-800/30 hover:shadow-xl hover:shadow-slate-800/40">
+              <button
+                onClick={() => handleBuyClick("silver")}
+                className="mt-auto w-full py-4 px-6 rounded-xl bg-gradient-to-r from-slate-600 to-slate-700 text-white font-semibold transition-all duration-300 hover:from-slate-500 hover:to-slate-600 shadow-lg shadow-slate-800/30 hover:shadow-xl hover:shadow-slate-800/40 cursor-pointer relative z-10"
+              >
                 Upgrade to Silver
               </button>
             </div>
@@ -361,7 +383,10 @@ const Premium = () => {
               </div>
 
               {/* Button */}
-              <button className="mt-auto relative w-full py-4 px-6 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-amber-950 font-bold transition-all duration-300 hover:from-amber-300 hover:to-orange-400 shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40 overflow-hidden group/btn">
+              <button
+                onClick={() => handleBuyClick("gold")}
+                className="mt-auto relative w-full py-4 px-6 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-amber-950 font-bold transition-all duration-300 hover:from-amber-300 hover:to-orange-400 shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40 overflow-hidden group/btn"
+              >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   <Crown className="w-4 h-4" />
                   Get Gold Now
@@ -410,7 +435,6 @@ const Premium = () => {
         </div>
       </div>
 
-      {/* CSS for shimmer animation */}
       <style>{`
         @keyframes shimmer {
           0% { transform: translateX(-100%); }
