@@ -46,7 +46,7 @@ const Requests = () => {
 
   return (
     <div className="text-center my-10">
-      <h1 className="text-bold text-white text-3xl">Connection Requests</h1>
+      <h1 className="text-bold text-3xl">Connection Requests</h1>
 
       {requests.map((request) => {
         const { _id, first_name, last_name, photoURL, age, gender, about } =
@@ -55,7 +55,7 @@ const Requests = () => {
         return (
           <div
             key={_id}
-            className=" flex justify-between items-center m-4 p-4 rounded-lg bg-base-300  mx-auto"
+            className="flex justify-between items-center m-4 p-4 rounded-lg bg-base-300 w-1/2 mx-auto"
           >
             <div>
               <img

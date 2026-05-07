@@ -2,13 +2,13 @@ import axios from "axios";
 import React from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router";
-import { BASEURL } from "../utils/constants";
+import { BASEURL } from "../../utils/constants";
 import { useNavigate } from "react-router";
 import { useDispatch } from "react-redux";
-import { removeUser } from "../utils/userSlice";
-import { removeFeed } from "../utils/feedSlice";
-import { removeConnections } from "../utils/connectionSlice";
-import { removeRequest } from "../utils/requestSlice";
+import { removeUser } from "../../utils/userSlice";
+import { removeFeed } from "../../utils/feedSlice";
+import { removeConnections } from "../../utils/connectionSlice";
+import { removeRequest } from "../../utils/requestSlice";
 
 const Navbar = () => {
   const user = useSelector((state) => state.user);
@@ -32,7 +32,7 @@ const Navbar = () => {
     <div className="">
       <div className="navbar bg-base-100 shadow-sm">
         <div className="flex-1">
-          <Link to="/feed" className="btn btn-ghost text-xl">
+          <Link to="/" className="btn btn-ghost text-xl">
             Merge Me
           </Link>
         </div>

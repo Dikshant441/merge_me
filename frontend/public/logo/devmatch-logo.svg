@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" fill="none">
+  <defs>
+    <!-- Blue Heart Gradient -->
+    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00d4ff;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#0099cc;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#005577;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Pink Heart Gradient -->
+    <linearGradient id="pinkGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff69b4;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#cc0066;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#990055;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Cyan Glow -->
+    <filter id="cyanGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Pink Glow -->
+    <filter id="pinkGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Blue Heart (Left) - Speech bubble shape -->
+  <g filter="url(#cyanGlow)">
+    <path d="M75 25 
+             C55 25 35 45 35 70 
+             C35 95 55 115 75 125 
+             L65 145 
+             L85 125 
+             C105 115 115 95 115 70 
+             C115 45 95 25 75 25 Z" 
+          fill="url(#blueGradient)" 
+          stroke="#00ffff" 
+          stroke-width="2"
+          opacity="0.95"/>
+    
+    <!-- Code symbols </> -->
+    <text x="75" y="80" 
+          font-family="Arial, sans-serif" 
+          font-size="28" 
+          font-weight="bold" 
+          fill="white" 
+          text-anchor="middle" 
+          dominant-baseline="middle">&lt;/&gt;</text>
+  </g>
+  
+  <!-- Pink Heart (Right) - Speech bubble shape -->
+  <g filter="url(#pinkGlow)">
+    <path d="M125 25 
+             C105 25 85 45 85 70 
+             C85 95 105 115 125 125 
+             L115 145 
+             L135 125 
+             C155 115 165 95 165 70 
+             C165 45 145 25 125 25 Z" 
+          fill="url(#pinkGradient)" 
+          stroke="#ff69b4" 
+          stroke-width="2"
+          opacity="0.95"/>
+    
+    <!-- Code symbols {} -->
+    <text x="125" y="80" 
+          font-family="Arial, sans-serif" 
+          font-size="28" 
+          font-weight="bold" 
+          fill="white" 
+          text-anchor="middle" 
+          dominant-baseline="middle">{}</text>
+  </g>
+</svg>
