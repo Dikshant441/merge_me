@@ -7,8 +7,8 @@ import { addUser } from "../utils/userSlice";
 import { use } from "react";
 
 const EditProfile = ({ user }) => {
-  const [firstName, setFirstName] = useState(user.first_name);
-  const [lastName, setLastName] = useState(user.last_name);
+  const [first_name, setFirstName] = useState(user.first_name);
+  const [last_name, setLastName] = useState(user.last_name);
   const [photoUrl, setPhotoUrl] = useState(user.photoURL);
   const [age, setAge] = useState(user.age || "");
   const [gender, setGender] = useState(user.gender || "");
@@ -25,8 +25,8 @@ const EditProfile = ({ user }) => {
       const res = await axios.patch(
         BASEURL + "/profile/edit",
         {
-          first_name: firstName,
-          last_name: lastName,
+          first_name: first_name,
+          last_name: last_name,
           photoURL: photoUrl,
           age,
           gender,
@@ -59,7 +59,7 @@ const EditProfile = ({ user }) => {
                   </div>
                   <input
                     type="text"
-                    value={firstName}
+                    value={first_name}
                     className="input input-bordered w-full max-w-xs"
                     onChange={(e) => setFirstName(e.target.value)}
                   />
@@ -71,7 +71,7 @@ const EditProfile = ({ user }) => {
                     </div>
                     <input
                       type="text"
-                      value={lastName}
+                      value={last_name}
                       className="input input-bordered w-full max-w-xs"
                       onChange={(e) => setLastName(e.target.value)}
                     />
@@ -131,8 +131,8 @@ const EditProfile = ({ user }) => {
         </div>
         <UserCard
           user={{
-            first_name: firstName,
-            last_name: lastName,
+            first_name: first_name,
+            last_name: last_name,
             photoURL: photoUrl,
             age,
             gender,

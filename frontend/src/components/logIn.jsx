@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addUser } from "../utils/userSlice";
 import { useNavigate, useLocation } from "react-router";
 import { BASEURL } from "../utils/constants";
@@ -8,16 +8,20 @@ import { BASEURL } from "../utils/constants";
 const Login = () => {
   const [email, setEmail] = useState("trump@gmail.com");
   const [password, setPassword] = useState("Trump@123");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [first_name, setFirstName] = useState("");
+  const [last_name, setLastName] = useState("");
   const [error, setError] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const isLoginForm = location.pathname === "/login";
+  const user = useSelector((state) => state.user);
+
+  useEffect(() => {
+    if (user) navigate("/", { replace: true });
+  }, [user, navigate]);
 
   const handleLogin = async () => {
-    console.log("is this wokrn ");
     try {
       const res = await axios.post(
         BASEURL + "/login",
@@ -27,11 +31,9 @@ const Login = () => {
         },
         { withCredentials: true }
       );
-      console.log("Login response:", res);
       dispatch(addUser(res.data));
       return navigate("/");
     } catch (error) {
-      console.error("Login failed:", error);
       setError("Login failed: " + (error.response?.data || error.message));
     }
   };
@@ -41,18 +43,16 @@ const Login = () => {
       const res = await axios.post(
         BASEURL + "/signup",
         {
-          first_name: firstName,
-          last_name: lastName,
+          first_name: first_name,
+          last_name: last_name,
           email,
           password,
         },
         { withCredentials: true }
       );
-      console.log("Signup response:", res);
       dispatch(addUser(res.data.data));
       return navigate("/");
     } catch (err) {
-      console.error("Signup failed:", err);
       setError("Signup failed: " + (err.response?.data || err.message));
     }
   };
@@ -64,7 +64,12 @@ const Login = () => {
           <h2 className="card-title justify-center">
             {isLoginForm ? "Login" : "Sign Up"}
           </h2>
-          <div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              isLoginForm ? handleLogin() : handleSignUp();
+            }}
+          >
             {!isLoginForm && (
               <>
                 <label className="form-control w-full max-w-xs my-2">
@@ -73,7 +78,7 @@ const Login = () => {
                   </div>
                   <input
                     type="text"
-                    value={firstName}
+                    value={first_name}
                     className="input input-bordered w-full max-w-xs"
                     onChange={(e) => setFirstName(e.target.value)}
                   />
@@ -84,7 +89,7 @@ const Login = () => {
                   </div>
                   <input
                     type="text"
-                    value={lastName}
+                    value={last_name}
                     className="input input-bordered w-full max-w-xs"
                     onChange={(e) => setLastName(e.target.value)}
                   />
@@ -113,7 +118,7 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </label>
-          </div>
+          </form>
           <p className="text-red-500">{error}</p>
           <div className="card-actions justify-center m-2">
             <button

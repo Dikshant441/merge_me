@@ -14,7 +14,14 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json());
+
+app.use(
+  express.json({
+    verify: (req, _res, buf) => {
+      req.rawBody = buf;
+    },
+  })
+);
 app.use(cookieParser());
 
 const authRouter = require("./routes/auth");
@@ -24,10 +31,10 @@ const userRouter = require("./routes/user");
 const paymentRouter = require("./routes/payment");
 
 app.use("/", authRouter);
+app.use("/", paymentRouter);
 app.use("/", userAuth, profileRouter);
 app.use("/", userAuth, requestRouter);
 app.use("/", userAuth, userRouter);
-app.use("/", userAuth, paymentRouter);
 
 connectDB()
   .then(() => {

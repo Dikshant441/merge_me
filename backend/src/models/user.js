@@ -50,6 +50,13 @@ const userSchema = Schema(
         }
       },
     },
+    isPremium: {
+      type: Boolean,
+      default: false,
+    },
+    membershipType: {
+      type: String,
+    },
     photoURL: {
       type: String,
       default: "https://www.example.com/default-photo.jpg",

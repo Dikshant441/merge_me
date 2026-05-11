@@ -31,10 +31,10 @@ const paymrentSchema = new mongoose.Schema(
       required: true,
     },
     notes: {
-      firstName: {
+      first_name: {
         type: String,
       },
-      lastName: {
+      last_name: {
         type: String,
       },
       membershipType: {
