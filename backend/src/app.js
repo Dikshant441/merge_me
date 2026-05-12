@@ -4,6 +4,7 @@ const connectDB = require("./config/db");
 const cookieParser = require("cookie-parser");
 const { userAuth } = require("./middleware/auth");
 const cors = require("cors");
+const http = require("http");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,7 +14,7 @@ app.use(
     origin: ["http://localhost:5173", "http://3.107.231.184"],
     credentials: true,
   })
-);
+); 
 
 app.use(
   express.json({
@@ -29,6 +30,7 @@ const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
 const paymentRouter = require("./routes/payment");
+const initChatServer = require("./utils/socket");
 
 app.use("/", authRouter);
 app.use("/", paymentRouter);
@@ -36,10 +38,13 @@ app.use("/", userAuth, profileRouter);
 app.use("/", userAuth, requestRouter);
 app.use("/", userAuth, userRouter);
 
+const server  = http.createServer(app);
+initChatServer(server);
+
 connectDB()
   .then(() => {
     console.log("Database connection seccesful ...");
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`Server running on port ${PORT}...`);
     });
   })
