@@ -30,6 +30,7 @@ const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
 const paymentRouter = require("./routes/payment");
+const chatRouter = require("./routes/chat");
 const initChatServer = require("./utils/socket");
 
 app.use("/", authRouter);
@@ -37,6 +38,7 @@ app.use("/", paymentRouter);
 app.use("/", userAuth, profileRouter);
 app.use("/", userAuth, requestRouter);
 app.use("/", userAuth, userRouter);
+app.use("/", chatRouter);
 
 const server  = http.createServer(app);
 initChatServer(server);
