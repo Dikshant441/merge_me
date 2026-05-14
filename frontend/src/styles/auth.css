@@ -1,0 +1,37 @@
+/* Auth-page-only CSS — same family as landing.css.
+ * Just the bits that are clearer in plain CSS than in Tailwind arbitraries:
+ *   - the photo-card dark-to-bottom gradient (sits over the testimonial photo)
+ *   - the input focus ring (oklch relative-color, not great inline)
+ *   - the password-strength color states (4 discrete tints)
+ */
+
+/* Dark gradient overlay used on the left showcase card, on top of the photo. */
+.mm-showcase-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(20, 14, 4, 0.10) 0%,
+    rgba(20, 14, 4, 0.45) 60%,
+    rgba(20, 14, 4, 0.85) 100%
+  );
+}
+
+/* Focus ring on the auth inputs — Tailwind can't express oklch relative-color
+ * cleanly, so this stays as a class. The .input wrapper gets the ring, not the
+ * <input> itself, because we want it to wrap the whole pill (icon + field +
+ * toggle button). */
+.mm-auth-input:focus-within {
+  border-color: var(--mm-coral);
+  background: var(--mm-surface);
+  box-shadow: 0 0 0 4px oklch(from var(--mm-coral) l c h / 0.14);
+}
+
+/* Password strength meter — 4 discrete colors at each score level. */
+.mm-pw-bar { background: var(--mm-border); }
+.mm-pw-bar.on-1 { background: oklch(0.65 0.20 25); }
+.mm-pw-bar.on-2 { background: oklch(0.70 0.18 50); }
+.mm-pw-bar.on-3 { background: oklch(0.70 0.14 90); }
+.mm-pw-bar.on-4 { background: var(--mm-success); }

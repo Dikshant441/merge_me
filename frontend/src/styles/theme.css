@@ -1,0 +1,80 @@
+/* Merge Me design tokens — light + dark.
+ *
+ * Two layers:
+ *   1. Raw CSS variables on :root / [data-theme="dark"] — these flip on theme change.
+ *   2. @theme block registers them as Tailwind utilities (bg-mm-bg, text-mm-ink, …)
+ *      so components can use clean class names instead of arbitrary values.
+ */
+
+:root {
+  --mm-bg:        #F4EFE5;
+  --mm-bg-2:      #E8DFCC;
+  --mm-surface:   #FFFDF8;
+  --mm-paper:     #FBF5E8;
+  --mm-ink:       #1A130A;
+  --mm-ink-2:     rgba(26, 19, 10, 0.70);
+  --mm-ink-3:     rgba(26, 19, 10, 0.50);
+  --mm-ink-4:     rgba(26, 19, 10, 0.26);
+  --mm-border:    rgba(40, 24, 8, 0.10);
+  --mm-border-2:  rgba(40, 24, 8, 0.18);
+
+  --mm-coral:     oklch(0.64 0.20 30);
+  --mm-coral-2:   oklch(0.50 0.22 28);
+  --mm-amber:     oklch(0.78 0.16 70);
+  --mm-violet:    oklch(0.58 0.18 280);
+
+  --mm-success:   oklch(0.55 0.15 145);
+  --mm-danger:    oklch(0.55 0.20 25);
+
+  --mm-shadow-card:  0 1px 0 rgba(255,255,255,.8) inset, 0 2px 6px rgba(28,22,14,.06), 0 24px 60px -20px rgba(28,22,14,.22);
+  --mm-shadow-photo: 0 1px 0 rgba(255,255,255,.6) inset, 0 1px 2px rgba(28,22,14,.06), 0 18px 36px -16px rgba(28,22,14,.32);
+  --mm-shadow-soft:  0 1px 0 rgba(255,255,255,.8) inset, 0 1px 2px rgba(28,22,14,.04), 0 12px 28px -14px rgba(28,22,14,.14);
+
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --mm-bg:        #0E0F0E;
+  --mm-bg-2:      #14150E;
+  --mm-surface:   #1A1C19;
+  --mm-paper:     #1F211C;
+  --mm-ink:       #F2EFE6;
+  --mm-ink-2:     rgba(242, 239, 230, 0.66);
+  --mm-ink-3:     rgba(242, 239, 230, 0.46);
+  --mm-ink-4:     rgba(242, 239, 230, 0.22);
+  --mm-border:    rgba(255, 255, 255, 0.08);
+  --mm-border-2:  rgba(255, 255, 255, 0.16);
+
+  --mm-coral:     oklch(0.74 0.17 50);
+  --mm-coral-2:   oklch(0.82 0.16 55);
+
+  --mm-shadow-card:  0 1px 0 rgba(255,255,255,.04) inset, 0 2px 6px rgba(0,0,0,.4), 0 28px 60px -24px rgba(0,0,0,.6);
+  --mm-shadow-photo: 0 1px 0 rgba(255,255,255,.04) inset, 0 1px 2px rgba(0,0,0,.4), 0 22px 40px -18px rgba(0,0,0,.7);
+  --mm-shadow-soft:  0 1px 0 rgba(255,255,255,.04) inset, 0 1px 2px rgba(0,0,0,.4), 0 16px 32px -16px rgba(0,0,0,.5);
+
+  color-scheme: dark;
+}
+
+@theme {
+  --color-mm-bg:        var(--mm-bg);
+  --color-mm-bg-2:      var(--mm-bg-2);
+  --color-mm-surface:   var(--mm-surface);
+  --color-mm-paper:     var(--mm-paper);
+  --color-mm-ink:       var(--mm-ink);
+  --color-mm-ink-2:     var(--mm-ink-2);
+  --color-mm-ink-3:     var(--mm-ink-3);
+  --color-mm-ink-4:     var(--mm-ink-4);
+  --color-mm-border:    var(--mm-border);
+  --color-mm-border-2:  var(--mm-border-2);
+  --color-mm-coral:     var(--mm-coral);
+  --color-mm-coral-2:   var(--mm-coral-2);
+  --color-mm-amber:     var(--mm-amber);
+  --color-mm-violet:    var(--mm-violet);
+  --color-mm-success:   var(--mm-success);
+  --color-mm-danger:    var(--mm-danger);
+
+  --font-sans:  "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:  "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-serif: "Instrument Serif", Georgia, serif;
+  --font-deva:  "Noto Sans Devanagari", "Geist", ui-sans-serif, system-ui, sans-serif;
+}

@@ -1,0 +1,375 @@
+// All landing-page strings, in English and Hindi.
+// Source of truth — don't paraphrase or fork copies into components.
+
+export const SUPPORTED_LOCALES = ["en", "hi"];
+export const DEFAULT_LOCALE = "en";
+
+// URL segment → locale code (improvement.text §6 — /en-in/, /hi-in/).
+export const LOCALE_BY_PATH = {
+  "en-in": "en",
+  "hi-in": "hi",
+};
+export const PATH_BY_LOCALE = {
+  en: "en-in",
+  hi: "hi-in",
+};
+
+const en = {
+  navFeatures: "Features",
+  navHow: "How it works",
+  navPricing: "Pricing",
+  signIn: "Sign in",
+  cta: "git init love",
+
+  h1a: "Find your perfect ",
+  h1em: "merge conflict",
+  h1b: ".",
+  lede: "Merge Me is the dating app for developers. Match by stack, chat in code blocks, and ship something real together.",
+
+  trustStrong: "24,182 developers",
+  trustRest: "from 1,400 companies — and counting.",
+
+  eyebrow1: "Recently merged into main",
+  section1Title: ["Real ", "stories", ", real ", "stacks", "."],
+  section1Sub:
+    "Couples who actually met by matching on languages, frameworks, and the time zones they keep awake.",
+  galleryFoot: "showing 6 of 1,247 — ",
+  galleryFootLink: "see the rest →",
+  galleryFootMeta: "~/merge-me/main · 1,247 records",
+
+  eyebrow2: "Why it works",
+  section2Title: ["Built like a ", "developer tool", ", not a slot machine."],
+  section2Sub: "Three things we got right.",
+
+  features: [
+    {
+      num: "01",
+      titleA: "Match by ",
+      titleEm: "stack",
+      titleB: ", not by selfie.",
+      body: "Your real overlap — languages, frameworks, time zones — drives the queue. Profiles surface why you're a fit.",
+      viz: "stack",
+    },
+    {
+      num: "02",
+      titleA: "Chat in ",
+      titleEm: "code blocks",
+      titleB: ".",
+      body: "Triple-backtick a snippet and it just works. Syntax highlight, copy button, no \"can you paste it again\".",
+      viz: "chat",
+    },
+    {
+      num: "03",
+      titleA: "Real devs, ",
+      titleEm: "verified",
+      titleB: ".",
+      body: "Link GitHub, GitLab, or Bitbucket. We check it's actually yours, then never post on your behalf.",
+      viz: "verify",
+    },
+  ],
+
+  ctaStripPill: "git push origin you@love",
+  ctaStripTitle: ["Your team is ", "shipping ", "without you."],
+  ctaStripSub: "24,000+ developers already merging. Your queue is one signup away.",
+
+  chatThem: "got a sec? my reducer is firing twice",
+  chatThemCode: "useEffect(() => fetch('/me'), [user]);",
+  chatYou: "dep array. drop `user` 😉",
+  chatYouCode: "// just []",
+
+  verify: [
+    ["GitHub", "@aanya-i · 4y · 218 repos"],
+    ["LinkedIn", "Backend Engineer · Razorpay"],
+    ["Stack Overflow", "12,400 rep · top 5% Go"],
+  ],
+
+  stackHeads: ["you", "Aanya"],
+  stackList: [
+    ["Go", "Kubernetes", "Postgres", "Python"],
+    ["Go", "Kubernetes", "Bangalore", "Rust"],
+  ],
+
+  footerCopy: "© 2026 Merge Me Labs",
+  footerStatus: "all systems operational",
+  footerLinks: ["Privacy", "Terms", "Status", "Changelog"],
+
+  swipeMerge: "Merge",
+  swipePass: "Pass",
+  awaiting: "$ awaiting merge…",
+
+  // Auth pages (login + signup). Nested so they don't pollute the flat
+  // landing keys — components read copy.auth.*.
+  auth: {
+    backToMerge: "Back to Merge Me",
+    navStatus: "v1.0 · public beta",
+    tabSignIn: "Sign in",
+    tabSignUp: "Create account",
+
+    signInTitleA: "Welcome ",
+    signInTitleEm: "back",
+    signInTitleB: ".",
+    signInSub: "Pick up where you left off. Your queue is waiting.",
+
+    signUpTitleA: "Make your ",
+    signUpTitleEm: "dev profile",
+    signUpTitleB: ".",
+    signUpSub: "Two minutes to set up. Then start matching by stack, not by selfie.",
+
+    oauthGitHub: "Continue with GitHub",
+    oauthGitLab: "Continue with GitLab",
+    oauthGoogle: "Continue with Google",
+    oauthHint: "recommended",
+    divider: "or with email",
+
+    fldFirst: "First name",
+    fldFirstPh: "Aanya",
+    fldLast: "Last name",
+    fldLastPh: "Iyer",
+    fldEmail: "Email",
+    fldEmailPh: "you@company.dev",
+    fldPwd: "Password",
+    fldPwdPhSignIn: "your password",
+    fldPwdPhSignUp: "8+ characters, 1 number",
+
+    show: "Show",
+    hide: "Hide",
+    remember: "Remember me",
+    forgot: "Forgot?",
+
+    pwd0: "use 8+ chars, mixed case + number",
+    pwd1: "weak",
+    pwd2: "okay",
+    pwd3: "good",
+    pwd4: "strong",
+
+    submitSignIn: "Sign in",
+    submitSignUp: "git init love",
+
+    footSignIn: "New here? ",
+    footSignInLink: "Create an account",
+    footSignUp: "Already shipping? ",
+    footSignUpLink: "Sign in",
+
+    legalA: "By continuing, you agree to our ",
+    legalTerms: "Terms",
+    legalAnd: " and acknowledge our ",
+    legalPrivacy: "Privacy Policy",
+    legalEnd: ".",
+
+    perks: [
+      ["check", "Match by stack.", " Your real overlap drives the queue — not selfies."],
+      ["code", "Chat in code blocks.", " Triple-backtick a snippet and it just works."],
+      ["shield", "Verified devs only.", " GitHub-linked profiles. No bots, no recruiters."],
+    ],
+
+    livePill: "live · 12 devs swiping right now",
+
+    showcase: [
+      {
+        quote: ["We resolved our ", "merge conflicts", " in Lisbon. Two months later, we're shipping a startup together."],
+        who: "Diego × Sasha",
+        meta: "merged 09/25 · go + ts · ✓ verified",
+        photo: "/landing/g4a-1.png",
+        avatar: "/landing/g8-7.png",
+        tags: ["go × ts", "amsterdam", "merged 09/25"],
+      },
+      {
+        quote: ["Our first chat was a ", "stack trace", ". Our first date was a refactor."],
+        who: "Ada × Theo",
+        meta: "merged 05/25 · rust + embedded · ✓ verified",
+        photo: "/landing/p-rust-girl-couple.png",
+        avatar: "/landing/g8-1.png",
+        tags: ["rust × c", "oakland", "long-running"],
+      },
+      {
+        quote: ["He pushed to ", "main", ". I held the line. Now we deploy together every Friday."],
+        who: "Marco × Zoé",
+        meta: "merged 02/26 · go + python · ✓ verified",
+        photo: "/landing/g3-big.png",
+        avatar: "/landing/g8-3.png",
+        tags: ["go × py", "istanbul", "v2.0 shipped"],
+      },
+    ],
+  },
+};
+
+const hi = {
+  navFeatures: "फ़ीचर्स",
+  navHow: "कैसे काम करता है",
+  navPricing: "प्राइसिंग",
+  signIn: "साइन इन",
+  cta: "git init love",
+
+  h1a: "अपना परफेक्ट ",
+  h1em: "merge conflict",
+  h1b: " ढूंढो।",
+  lede: "मर्ज मी डेवलपर्स के लिए डेटिंग ऐप है। स्टैक पर मैच करो, कोड ब्लॉक में चैट करो, और साथ मिलकर कुछ असली शिप करो।",
+
+  trustStrong: "24,182 डेवलपर्स",
+  trustRest: "1,400 कंपनियों से — और बढ़ रहे हैं।",
+
+  eyebrow1: "हाल ही में main में मर्ज हुए",
+  section1Title: ["असली ", "कहानियाँ", ", असली ", "स्टैक", "।"],
+  section1Sub:
+    "जो जोड़े सच में मिले — लैंग्वेज, फ्रेमवर्क, और जिन टाइमज़ोन्स में जागते हैं उन पर मैच करके।",
+  galleryFoot: "1,247 में से 6 दिख रहे — ",
+  galleryFootLink: "बाकी देखें →",
+  galleryFootMeta: "~/merge-me/main · 1,247 records",
+
+  eyebrow2: "क्यों चलता है",
+  section2Title: ["स्लॉट मशीन नहीं — ", "डेवलपर टूल", " की तरह बना है।"],
+  section2Sub: "तीन चीज़ें जो हमने सही कीं।",
+
+  features: [
+    {
+      num: "01",
+      titleA: "सेल्फी नहीं, ",
+      titleEm: "स्टैक",
+      titleB: " से मैच।",
+      body: "लैंग्वेज, फ्रेमवर्क, टाइमज़ोन — आपका असली ओवरलैप ही क्यू तय करता है। प्रोफ़ाइल बताती है कि क्यों फिट हो।",
+      viz: "stack",
+    },
+    {
+      num: "02",
+      titleA: "",
+      titleEm: "कोड ब्लॉक",
+      titleB: " में चैट करो।",
+      body: "ट्रिपल-बैकटिक से स्निपेट डालो, बस हो गया। सिंटैक्स हाइलाइट, कॉपी बटन, बिना \"फिर से भेजो\"।",
+      viz: "chat",
+    },
+    {
+      num: "03",
+      titleA: "असली डेवलपर्स, ",
+      titleEm: "वेरिफ़ाइड",
+      titleB: "।",
+      body: "GitHub, GitLab या Bitbucket जोड़ो। हम देखते हैं कि असली में आपका है, और कभी आपकी तरफ़ से पोस्ट नहीं करते।",
+      viz: "verify",
+    },
+  ],
+
+  ctaStripPill: "git push origin you@love",
+  ctaStripTitle: ["आपकी टीम आपके बिना ", "शिप", " कर रही है।"],
+  ctaStripSub: "24,000+ डेवलपर्स पहले से मर्ज कर रहे हैं। एक साइन-अप दूर।",
+
+  chatThem: "एक सेकंड? मेरा reducer दो बार चल रहा है",
+  chatThemCode: "useEffect(() => fetch('/me'), [user]);",
+  chatYou: "dep array. `user` हटा दो 😉",
+  chatYouCode: "// बस []",
+
+  verify: [
+    ["GitHub", "@aanya-i · 4 साल · 218 repos"],
+    ["LinkedIn", "बैकएंड इंजी. · Razorpay"],
+    ["Stack Overflow", "12,400 rep · top 5% Go"],
+  ],
+
+  stackHeads: ["आप", "आन्या"],
+  stackList: [
+    ["Go", "Kubernetes", "Postgres", "Python"],
+    ["Go", "Kubernetes", "बेंगलुरु", "Rust"],
+  ],
+
+  footerCopy: "© 2026 मर्ज मी लैब्स",
+  footerStatus: "सब सिस्टम चालू",
+  footerLinks: ["प्राइवेसी", "टर्म्स", "स्टेटस", "चेंजलॉग"],
+
+  swipeMerge: "मर्ज",
+  swipePass: "पास",
+  awaiting: "$ awaiting merge…",
+
+  auth: {
+    backToMerge: "मर्ज मी पर वापस",
+    navStatus: "v1.0 · पब्लिक बीटा",
+    tabSignIn: "साइन इन",
+    tabSignUp: "अकाउंट बनाएँ",
+
+    signInTitleA: "वापसी पर ",
+    signInTitleEm: "स्वागत",
+    signInTitleB: " है।",
+    signInSub: "जहाँ छोड़ा था वहीं से शुरू करें। आपका क्यू इंतज़ार में है।",
+
+    signUpTitleA: "अपनी ",
+    signUpTitleEm: "डेव प्रोफ़ाइल",
+    signUpTitleB: " बनाएँ।",
+    signUpSub: "दो मिनट में सेट करें। फिर सेल्फी नहीं — स्टैक से मैच करें।",
+
+    oauthGitHub: "GitHub से जारी रखें",
+    oauthGitLab: "GitLab से जारी रखें",
+    oauthGoogle: "Google से जारी रखें",
+    oauthHint: "सुझाया गया",
+    divider: "या ईमेल से",
+
+    fldFirst: "पहला नाम",
+    fldFirstPh: "आन्या",
+    fldLast: "उपनाम",
+    fldLastPh: "अय्यर",
+    fldEmail: "ईमेल",
+    fldEmailPh: "you@company.dev",
+    fldPwd: "पासवर्ड",
+    fldPwdPhSignIn: "आपका पासवर्ड",
+    fldPwdPhSignUp: "8+ अक्षर, 1 नंबर",
+
+    show: "दिखाएँ",
+    hide: "छुपाएँ",
+    remember: "मुझे याद रखें",
+    forgot: "भूल गए?",
+
+    pwd0: "8+ अक्षर, बड़े-छोटे + नंबर का इस्तेमाल करें",
+    pwd1: "कमज़ोर",
+    pwd2: "ठीक",
+    pwd3: "अच्छा",
+    pwd4: "मज़बूत",
+
+    submitSignIn: "साइन इन",
+    submitSignUp: "git init love",
+
+    footSignIn: "नए हैं? ",
+    footSignInLink: "अकाउंट बनाएँ",
+    footSignUp: "पहले से शिप कर रहे हैं? ",
+    footSignUpLink: "साइन इन",
+
+    legalA: "जारी रखते हुए, आप हमारी ",
+    legalTerms: "टर्म्स",
+    legalAnd: " से सहमत हैं और हमारी ",
+    legalPrivacy: "प्राइवेसी पॉलिसी",
+    legalEnd: " स्वीकार करते हैं।",
+
+    perks: [
+      ["check", "स्टैक से मैच।", " सेल्फी नहीं — असली ओवरलैप ही क्यू तय करता है।"],
+      ["code", "कोड ब्लॉक में चैट।", " ट्रिपल-बैकटिक से स्निपेट डालो, बस हो गया।"],
+      ["shield", "केवल वेरिफ़ाइड डेव।", " GitHub-लिंक्ड प्रोफ़ाइल। बॉट या रिक्रूटर नहीं।"],
+    ],
+
+    livePill: "live · अभी 12 डेव स्वाइप कर रहे हैं",
+
+    showcase: [
+      {
+        quote: ["हमने अपने ", "merge conflicts", " लिस्बन में सुलझाए। दो महीने बाद, हम एक स्टार्टअप शिप कर रहे हैं।"],
+        who: "दिएगो × साशा",
+        meta: "merged 09/25 · go + ts · ✓ verified",
+        photo: "/landing/g4a-1.png",
+        avatar: "/landing/g8-7.png",
+        tags: ["go × ts", "amsterdam", "merged 09/25"],
+      },
+      {
+        quote: ["हमारी पहली बातचीत एक ", "stack trace", " थी। पहला डेट एक refactor था।"],
+        who: "एडा × थिओ",
+        meta: "merged 05/25 · rust + embedded · ✓ verified",
+        photo: "/landing/p-rust-girl-couple.png",
+        avatar: "/landing/g8-1.png",
+        tags: ["rust × c", "oakland", "long-running"],
+      },
+      {
+        quote: ["उसने ", "main", " पर पुश किया। मैंने लाइन होल्ड की। अब हम हर शुक्रवार साथ डिप्लॉय करते हैं।"],
+        who: "मार्को × ज़ोए",
+        meta: "merged 02/26 · go + python · ✓ verified",
+        photo: "/landing/g3-big.png",
+        avatar: "/landing/g8-3.png",
+        tags: ["go × py", "istanbul", "v2.0 shipped"],
+      },
+    ],
+  },
+};
+
+export const COPY = { en, hi };
+
+export const getCopy = (locale) => COPY[locale] || COPY[DEFAULT_LOCALE];

@@ -1,0 +1,162 @@
+/* Landing-page-only CSS that can't be expressed cleanly in Tailwind:
+ *   - the background mesh + grain layer
+ *   - keyframes (pill dot pulse)
+ *   - asymmetric photo collage grid spans
+ *   - the gradient-text <em> accent (used in every section heading)
+ *   - the swipe-stack stamp colors (oklch relative-color)
+ *
+ * Everything else uses Tailwind utilities + the tokens in theme.css.
+ */
+
+.landing-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 88% 8%,  oklch(0.80 0.18 38 / .55), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 12% 22%, oklch(0.88 0.14 70 / .50), transparent 60%),
+    radial-gradient(ellipse 70% 60% at 4% 92%,  oklch(0.82 0.10 320 / .35), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 95% 80%, oklch(0.74 0.16 30 / .35), transparent 60%);
+}
+.landing-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.22 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  opacity: 0.45;
+  mix-blend-mode: multiply;
+}
+[data-theme="dark"] .landing-bg {
+  background:
+    radial-gradient(ellipse 80% 60% at 88% 8%,  oklch(0.50 0.18 30 / .50), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 12% 22%, oklch(0.42 0.12 280 / .50), transparent 60%),
+    radial-gradient(ellipse 70% 60% at 4% 92%,  oklch(0.40 0.10 320 / .50), transparent 60%);
+}
+[data-theme="dark"] .landing-bg::after {
+  opacity: 0.25;
+  mix-blend-mode: screen;
+}
+
+@keyframes mm-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 3px oklch(from var(--mm-coral) l c h / 0.22),
+      0 0 8px  oklch(from var(--mm-coral) l c h / 0.50);
+  }
+  50% {
+    box-shadow:
+      0 0 0 5px oklch(from var(--mm-coral) l c h / 0.12),
+      0 0 18px oklch(from var(--mm-coral) l c h / 0.80);
+  }
+}
+.mm-pulse-dot {
+  background: var(--mm-coral);
+  animation: mm-pulse 2.4s ease-in-out infinite;
+}
+
+/* Gradient text used in every <em> accent inside a section heading. */
+.mm-grad-text {
+  background: linear-gradient(120deg, var(--mm-coral-2) 0%, var(--mm-coral) 50%, var(--mm-amber) 100%);
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+[data-theme="dark"] .mm-grad-text {
+  background: linear-gradient(120deg, oklch(0.80 0.16 50), oklch(0.86 0.16 60), oklch(0.82 0.10 320));
+  -webkit-background-clip: text;
+          background-clip: text;
+}
+
+/* Eyebrow with a small gradient hairline before the text. */
+.mm-eyebrow::before {
+  content: "";
+  width: 22px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--mm-coral));
+}
+
+/* Asymmetric photo-collage grid (12-col, fixed row height). */
+.mm-gallery {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: 90px;
+  gap: 16px;
+}
+.mm-pc-a { grid-column: span 5; grid-row: span 5; }
+.mm-pc-b { grid-column: span 4; grid-row: span 3; }
+.mm-pc-c { grid-column: span 3; grid-row: span 4; }
+.mm-pc-d { grid-column: span 4; grid-row: span 4; }
+.mm-pc-e { grid-column: span 5; grid-row: span 3; }
+.mm-pc-f { grid-column: span 3; grid-row: span 3; }
+
+@media (max-width: 1100px) {
+  .mm-gallery { grid-auto-rows: 80px; }
+}
+@media (max-width: 720px) {
+  .mm-gallery { grid-template-columns: repeat(6, 1fr); }
+  .mm-pc-a, .mm-pc-b, .mm-pc-c, .mm-pc-d, .mm-pc-e, .mm-pc-f {
+    grid-column: span 6;
+    grid-row: span 3;
+  }
+}
+
+/* Feature cards — each gets a different corner-radial tint. */
+.mm-feature {
+  position: relative;
+  overflow: hidden;
+}
+.mm-feature::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 100% 0%, var(--mm-feature-tint, transparent), transparent 55%);
+}
+.mm-feature > * { position: relative; z-index: 1; }
+.mm-tint-coral  { --mm-feature-tint: oklch(0.92 0.10 38 / .55); }
+.mm-tint-amber  { --mm-feature-tint: oklch(0.90 0.10 70 / .55); }
+.mm-tint-violet { --mm-feature-tint: oklch(0.90 0.08 280 / .45); }
+[data-theme="dark"] .mm-tint-coral  { --mm-feature-tint: oklch(0.45 0.12 38 / .35); }
+[data-theme="dark"] .mm-tint-amber  { --mm-feature-tint: oklch(0.45 0.10 70 / .35); }
+[data-theme="dark"] .mm-tint-violet { --mm-feature-tint: oklch(0.40 0.10 280 / .35); }
+
+/* Swipe-stack stamps — oklch needed for accessible contrast on the photo. */
+.mm-stamp-merge {
+  color: var(--mm-success);
+  border: 2px solid var(--mm-success);
+}
+.mm-stamp-pass {
+  color: var(--mm-danger);
+  border: 2px solid var(--mm-danger);
+}
+
+/* The "match" pill on swipe cards — saturated coral tint regardless of theme. */
+.mm-tag-match {
+  background: oklch(from var(--mm-coral) 0.7 0.15 h);
+  border-color: transparent;
+}
+
+/* Bottom-fade overlay used on photo cards (swipe + gallery). */
+.mm-photo-fade::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 50%, rgba(0, 0, 0, 0.55));
+  pointer-events: none;
+}
+
+/* CTA strip dark warm gradient (sits on top of hero-crew.png). */
+.mm-cta-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(20,16,8,.85) 0%, rgba(20,16,8,.65) 40%, rgba(20,16,8,.35) 100%);
+}
+
+/* When the user is browsing in Hindi we want Devanagari to render correctly. */
+[data-lang="hi"] body,
+[data-lang="hi"] .mm-deva {
+  font-family: var(--font-deva);
+}
