@@ -3,3 +3,16 @@ information.txt
 .env
 deploy.md
 roazorpay.md
+
+# AI assistant configs and helper files (local dev tools — never commit)
+.claude/
+.cursor/
+.aider*
+.cline*
+.continue/
+.windsurf/
+.zed/
+.codex
+.codex/
+CLAUDE.md
+AGENTS.md

@@ -1,1 +1,15 @@
-improvement.text  
+improvement.text
+
+# AI assistant configs and helper files (local dev tools — never commit)
+.claude/
+.cursor/
+.aider*
+.cline*
+.continue/
+.windsurf/
+.zed/
+.codex
+.codex/
+.github/copilot-instructions.md
+CLAUDE.md
+AGENTS.md
