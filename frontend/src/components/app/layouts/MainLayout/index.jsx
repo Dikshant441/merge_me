@@ -1,11 +1,11 @@
-import Navbar from "./Navbar/index";
+import Navbar from "../../../shared/Navbar";
 import { Outlet, useNavigate } from "react-router";
-import Footer from "./Footer";
+import Footer from "../../../shared/Footer";
 import axios from "axios";
-import { BASEURL } from "../utils/constants";
+import { BASEURL } from "../../../../constants";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addUser } from "../utils/userSlice";
+import { addUser } from "../../../../store/user/slice";
 
 const Body = () => {
   const navigate = useNavigate();

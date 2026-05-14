@@ -12,7 +12,7 @@ import {
   Contact,
 } from "lucide-react";
 import axios from "axios";
-import { BASEURL } from "../utils/constants";
+import { BASEURL } from "../../../constants";
 import { useState, useEffect } from "react";
 
 const Premium = () => {

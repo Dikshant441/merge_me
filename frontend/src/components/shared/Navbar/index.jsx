@@ -2,14 +2,14 @@ import axios from "axios";
 import React from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router";
-import { BASEURL } from "../../utils/constants";
+import { BASEURL } from "../../../constants";
 import { useNavigate } from "react-router";
 import { useDispatch } from "react-redux";
-import { removeUser } from "../../utils/userSlice";
-import { removeFeed } from "../../utils/feedSlice";
-import { removeConnections } from "../../utils/connectionSlice";
-import { removeRequest } from "../../utils/requestSlice";
-import Profile from "../Profile";
+import { removeUser } from "../../../store/user/slice";
+import { removeFeed } from "../../../store/feed/slice";
+import { removeConnections } from "../../../store/connections/slice";
+import { removeRequest } from "../../../store/requests/slice";
+import Profile from "../../pages/ProfilePage";
 
 const Navbar = () => {
   const user = useSelector((state) => state.user);

@@ -25,13 +25,13 @@ app.use(
 );
 app.use(cookieParser());
 
-const authRouter = require("./routes/auth");
-const profileRouter = require("./routes/profile");
-const requestRouter = require("./routes/request");
-const userRouter = require("./routes/user");
-const paymentRouter = require("./routes/payment");
-const chatRouter = require("./routes/chat");
-const initChatServer = require("./utils/socket");
+const authRouter = require("./routes/authRoutes");
+const profileRouter = require("./routes/profileRoutes");
+const requestRouter = require("./routes/requestRoutes");
+const userRouter = require("./routes/userRoutes");
+const paymentRouter = require("./routes/paymentRoutes");
+const chatRouter = require("./routes/chatRoutes");
+const initChatServer = require("./sockets");
 
 app.use("/", authRouter);
 app.use("/", paymentRouter);

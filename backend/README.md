@@ -1,85 +1,75 @@
-# MergeMe — Backend
+# Merge Me — Backend
 
-This repository contains the backend for the MergeMe project — a small Node.js service providing APIs and server-side logic for the MergeMe application.
-
-## Features
-- Express-style API server (simple starter)
-- Development hot-reload with `nodemon`
-- Minimal, easy-to-extend structure for adding routes, models, and services
+Node.js + Express + MongoDB API powering the Merge Me client. Provides authentication, profile/feed/connection flows, real-time chat over Socket.IO, and Razorpay-backed premium membership.
 
 ## Prerequisites
-- Node.js 16+ (or compatible LTS)
-- npm (or yarn)
 
-## Installation
+- Node.js 18+
+- A MongoDB instance (local or Atlas)
+- A Razorpay account if you want to exercise the payment routes
+
+## Setup
+
 ```bash
-# clone the repo
-git clone <repository-url>
-cd merge_me/backend
-
-# install dependencies
+cd backend
+cp .env.example .env       # fill in real values
 npm install
+npm run dev                # nodemon on src/app.js
+# or
+npm start                  # node src/app.js
 ```
 
-## Environment
-Create a `.env` file in the project root (or use your environment manager). Common variables:
+The server listens on `PORT` (default `3000`).
 
-- `PORT` — port the server listens on (default: `3000`)
-- `NODE_ENV` — `development` or `production`
-- `MONGO_URI` — MongoDB connection string (if you integrate a DB)
+## Environment variables
 
-Example `.env`:
+See [`.env.example`](.env.example). Required:
+
+| Variable                   | Purpose                                  |
+| -------------------------- | ---------------------------------------- |
+| `PORT`                     | HTTP port (default `3000`)               |
+| `NODE_ENV`                 | `development` or `production`            |
+| `MONGODB_URI`              | Mongo connection string                  |
+| `JWT_SECRET`               | Secret used to sign auth tokens          |
+| `RAZORPAY_KEY_ID`          | Razorpay public key                      |
+| `RAZORPAY_KEY_SECRET`      | Razorpay private key                     |
+| `RAZORPAY_WEBHOOK_SECRET`  | Used to verify webhook signatures        |
+
+## Folder map
+
 ```
-PORT=3000
-NODE_ENV=development
-# MONGO_URI=mongodb://localhost:27017/merge_me
+backend/src/
+├── app.js                       Express app wiring + Socket.IO bootstrap
+├── config/
+│   └── db.js                    Mongoose connection
+├── lib/
+│   └── razorpay.js              Razorpay SDK instance
+├── middleware/
+│   └── auth.js                  JWT cookie → req.user
+├── models/
+│   ├── chat.js
+│   ├── connectionRequest.js
+│   ├── payment.js
+│   └── user.js
+├── routes/
+│   ├── authRoutes.js            /signup, /login, /logout
+│   ├── chatRoutes.js            /chat/:targetUserId
+│   ├── paymentRoutes.js         /payment/create, /payment/webhook, /premium/verify
+│   ├── profileRoutes.js         /profile/view, /profile/edit
+│   ├── requestRoutes.js         /request/send/..., /request/review/...
+│   └── userRoutes.js            /user/connections, /user/requests/received, /feed
+├── sockets/
+│   └── index.js                 Socket.IO server (joinChat, sendMessage)
+├── utils/
+│   └── constants.js             Membership pricing, etc.
+└── validators/
+    └── validation.js            Request body validation helpers
 ```
 
-## Usage
-- Start in production mode:
-```bash
-npm start
-```
+## API summary
 
-- Start in development mode (auto-restarts with changes):
-```bash
-npm run dev
-```
-
-## Scripts
-The following scripts are defined in `package.json`:
-
-- `start` — `node index.js` — start the server
-- `dev` — `nodemon index.js` — start with `nodemon` for development
-- `test` — placeholder test script (no tests defined yet)
-
-You can run them with `npm run <script>`.
-
-## Project Structure (example)
-```
-├─ index.js            # app entry point
-├─ package.json
-├─ routes/             # express route handlers
-├─ controllers/        # request handlers and business logic
-├─ models/             # database models (if used)
-└─ README.md
-```
-
-Adjust structure to fit your framework and style.
-
-## Contributing
-Contributions are welcome. Open an issue or submit a pull request with a clear description of changes. For larger changes, open an issue first to discuss design and scope.
+See [`apiList.md`](apiList.md) for the full endpoint inventory. Razorpay specifics live in [`roazorpay.md`](roazorpay.md).
 
 ## License
-This project is licensed under the ISC License. See `package.json` for details.
 
-## Author / Contact
-Dikshant Singh — author listed in `package.json`.
-
-If you'd like, I can:
-- add example API endpoints and sample requests
-- add tests and a minimal CI workflow
-- add badges (build, license, node version)
-
----
-Generated README: concise starter to help onboard contributors and run the project locally.
+ISC — see `package.json`.

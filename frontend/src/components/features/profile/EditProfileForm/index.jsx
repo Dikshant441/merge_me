@@ -1,9 +1,9 @@
 import { useState } from "react";
-import UserCard from "./UserCard";
+import UserCard from "../../feed/UserCard";
 import axios from "axios";
-import { BASEURL } from "../utils/constants";
+import { BASEURL } from "../../../../constants";
 import { useDispatch } from "react-redux";
-import { addUser } from "../utils/userSlice";
+import { addUser } from "../../../../store/user/slice";
 import { use } from "react";
 
 const EditProfile = ({ user }) => {

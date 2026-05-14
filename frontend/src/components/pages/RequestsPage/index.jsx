@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
-import { BASEURL } from "../utils/constants";
-import { addRequests, removeRequest } from "../utils/requestSlice";
+import { BASEURL } from "../../../constants";
+import { addRequests, removeRequest } from "../../../store/requests/slice";
 import { useEffect } from "react";
 
 const Requests = () => {

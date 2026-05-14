@@ -1,7 +1,7 @@
 import axios from "axios";
 import React from "react";
-import { BASEURL } from "../utils/constants";
-import { addConnections } from "../utils/connectionSlice";
+import { BASEURL } from "../../../constants";
+import { addConnections } from "../../../store/connections/slice";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { Link } from "react-router";

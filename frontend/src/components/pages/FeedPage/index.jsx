@@ -1,11 +1,11 @@
 import React from "react";
-import { BASEURL } from "../utils/constants";
+import { BASEURL } from "../../../constants";
 import axios from "axios";
 import { useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
-import { addFeed } from "../utils/feedSlice";
+import { addFeed } from "../../../store/feed/slice";
 import { useEffect } from "react";
-import UserCard from "./UserCard";
+import UserCard from "../../features/feed/UserCard";
 
 const Feed = () => {
   const navigate = useNavigate();

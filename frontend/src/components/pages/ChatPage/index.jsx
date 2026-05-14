@@ -2,7 +2,7 @@
 import { useParams, useSearchParams } from "react-router";
 import { useState } from "react";
 import { useEffect } from "react";
-import { createSocketConnection } from "../utils/socket";
+import { createSocketConnection } from "../../../helpers/socket";
 import { useSelector } from "react-redux";
 import axios from "axios";
 

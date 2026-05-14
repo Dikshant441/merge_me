@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
-import { addUser } from "../utils/userSlice";
+import { addUser } from "../../../store/user/slice";
 import { useNavigate, useLocation } from "react-router";
-import { BASEURL } from "../utils/constants";
+import { BASEURL } from "../../../constants";
 
 const Login = () => {
   const [email, setEmail] = useState("trump@gmail.com");
