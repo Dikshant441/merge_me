@@ -26,6 +26,9 @@ const Nav = ({ copy }) => {
           <a href="#pricing" className="text-mm-ink-2 text-sm font-medium hover:text-mm-ink">
             {copy.navPricing}
           </a>
+          <a href="#docs" className="text-mm-ink-2 text-sm font-medium hover:text-mm-ink">
+            {copy.navDocs}
+          </a>
         </div>
 
         <div className="ml-auto flex items-center gap-3">

@@ -1,16 +1,31 @@
+import { useEffect } from "react";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
+import { useOutletContext } from "react-router";
 import { BASEURL } from "../../../constants";
 import { addRequests, removeRequest } from "../../../store/requests/slice";
-import { useEffect } from "react";
+import PageHeader from "../../shared/PageHeader";
+import RequestCard from "../../features/requests/RequestCard";
 
 const Requests = () => {
-  const requests = useSelector((store) => store.requests);
   const dispatch = useDispatch();
+  const requests = useSelector((s) => s.requests);
+  const { copy } = useOutletContext();
+
+  const fetchRequests = async () => {
+    try {
+      const res = await axios.get(BASEURL + "/user/requests/received", {
+        withCredentials: true,
+      });
+      dispatch(addRequests(res.data.data));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const reviewRequest = async (status, _id) => {
     try {
-      const res = axios.post(
+      await axios.post(
         BASEURL + "/request/review/" + status + "/" + _id,
         {},
         { withCredentials: true }
@@ -21,74 +36,41 @@ const Requests = () => {
     }
   };
 
-  const fetchRequests = async () => {
-    try {
-      const res = await axios.get(BASEURL + "/user/requests/received", {
-        withCredentials: true,
-      });
-      console.log(res.data.data);
-
-      dispatch(addRequests(res.data.data));
-    } catch (err) {
-      // Handle Error Case
-      console.error(err);
-    }
-  };
-
   useEffect(() => {
     fetchRequests();
   }, []);
 
-  if (!requests) return;
-
-  if (requests.length === 0)
-    return <h1 className="flex justify-center mt-20"> No Requests Found</h1>;
-
   return (
-    <div className="text-center my-10">
-      <h1 className="text-bold text-3xl">Connection Requests</h1>
+    <>
+      <PageHeader
+        eyebrow={copy.app.requests.eyebrow}
+        titleA={copy.app.requests.titleA}
+        titleEm={copy.app.requests.titleEm}
+        titleB={copy.app.requests.titleB}
+        sub={copy.app.requests.sub}
+      />
 
-      {requests.map((request) => {
-        const { _id, first_name, last_name, photoURL, age, gender, about } =
-          request.fromUserId;
-
-        return (
-          <div
-            key={_id}
-            className="flex justify-between items-center m-4 p-4 rounded-lg bg-base-300 w-1/2 mx-auto"
-          >
-            <div>
-              <img
-                alt="photo"
-                className="w-20 h-20 rounded-full"
-                src={photoURL}
-              />
-            </div>
-            <div className="text-left mx-4 ">
-              <h2 className="font-bold text-xl">
-                {first_name + " " + last_name}
-              </h2>
-              {age && gender && <p>{age + ", " + gender}</p>}
-              <p>{about}</p>
-            </div>
-            <div>
-              <button
-                className="btn btn-primary mx-2"
-                onClick={() => reviewRequest("rejected", request._id)}
-              >
-                Reject
-              </button>
-              <button
-                className="btn btn-secondary mx-2"
-                onClick={() => reviewRequest("accepted", request._id)}
-              >
-                Accept
-              </button>
-            </div>
+      <div className="flex flex-col gap-4 max-w-[920px]">
+        {(!requests || requests.length === 0) ? (
+          <div className="py-20 text-center text-mm-ink-3">
+            <h3 className="m-0 font-semibold text-[22px] tracking-[-0.02em] text-mm-ink">
+              {copy.app.requests.emptyTitle}
+            </h3>
+            <p className="mt-2 m-0">{copy.app.requests.emptySub}</p>
           </div>
-        );
-      })}
-    </div>
+        ) : (
+          requests.map((r) => (
+            <RequestCard
+              key={r._id}
+              request={r}
+              copy={copy}
+              onResolve={reviewRequest}
+            />
+          ))
+        )}
+      </div>
+    </>
   );
 };
+
 export default Requests;

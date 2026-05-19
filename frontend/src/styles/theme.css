@@ -11,6 +11,7 @@
   --mm-bg-2:      #E8DFCC;
   --mm-surface:   #FFFDF8;
   --mm-paper:     #FBF5E8;
+  --mm-paper-2:   #F4EBD6;
   --mm-ink:       #1A130A;
   --mm-ink-2:     rgba(26, 19, 10, 0.70);
   --mm-ink-3:     rgba(26, 19, 10, 0.50);
@@ -38,6 +39,7 @@
   --mm-bg-2:      #14150E;
   --mm-surface:   #1A1C19;
   --mm-paper:     #1F211C;
+  --mm-paper-2:   #262824;
   --mm-ink:       #F2EFE6;
   --mm-ink-2:     rgba(242, 239, 230, 0.66);
   --mm-ink-3:     rgba(242, 239, 230, 0.46);
@@ -60,6 +62,7 @@
   --color-mm-bg-2:      var(--mm-bg-2);
   --color-mm-surface:   var(--mm-surface);
   --color-mm-paper:     var(--mm-paper);
+  --color-mm-paper-2:   var(--mm-paper-2);
   --color-mm-ink:       var(--mm-ink);
   --color-mm-ink-2:     var(--mm-ink-2);
   --color-mm-ink-3:     var(--mm-ink-3);

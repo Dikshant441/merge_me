@@ -1,14 +1,23 @@
+import { useEffect } from "react";
 import axios from "axios";
-import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useOutletContext, useParams } from "react-router";
 import { BASEURL } from "../../../constants";
 import { addConnections } from "../../../store/connections/slice";
-import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
-import { Link } from "react-router";
+import PageHeader from "../../shared/PageHeader";
+import ThreadList from "../../features/chat/ThreadList";
+import Thread from "../../features/chat/Thread";
+
+// Two-pane Connections page — thread list on the left, active thread on the
+// right. The `:userId` URL param drives which thread is selected; clicking a
+// row pushes /chat/:userId so the URL is shareable.
 
 const Connections = () => {
   const dispatch = useDispatch();
-  const connections = useSelector((store) => store?.connections);
+  const navigate = useNavigate();
+  const connections = useSelector((s) => s.connections);
+  const { copy } = useOutletContext();
+  const { userId } = useParams();
 
   const fetchConnections = async () => {
     try {
@@ -17,7 +26,6 @@ const Connections = () => {
       });
       dispatch(addConnections(res.data?.data));
     } catch (err) {
-      // Handle Error Case
       console.error(err);
     }
   };
@@ -26,46 +34,32 @@ const Connections = () => {
     fetchConnections();
   }, []);
 
-  if (!connections) return;
+  const list = connections || [];
+  const selectedId = userId || list[0]?._id || null;
+  const partner = list.find((c) => c._id === selectedId) || null;
 
-  if (connections.length === 0)
-    return <h1 className="mt-20 flex justify-center"> No Connections Found</h1>;
+  const onSelect = (id) => navigate("/chat/" + id);
 
   return (
-    <div className="text-center my-10">
-      <h1 className="text-bold text-3xl">Connections</h1>
+    <>
+      <PageHeader
+        eyebrow={copy.app.connections.eyebrow}
+        titleA={copy.app.connections.titleA}
+        titleEm={copy.app.connections.titleEm}
+        titleB={copy.app.connections.titleB}
+        sub={copy.app.connections.sub}
+      />
 
-      {connections.map((connection) => {
-        const { _id, first_name, last_name, photoURL, age, gender, about } =
-          connection;
-
-        return (
-          <div
-            key={_id}
-            className="flex m-4 p-4 rounded-lg bg-base-300 w-1/2 mx-auto"
-          >
-            <div>
-              <img
-                alt="photo"
-                className="w-20 h-20 rounded-full object-cover"
-                src={photoURL}
-              />
-            </div>
-            <div className="text-left mx-4 ">
-              <h2 className="font-bold text-xl">
-                {first_name + " " + last_name}
-              </h2>
-              {age && gender && <p>{age + ", " + gender}</p>}
-              <p>{about}</p>
-            </div>
-            <Link to={"/chat/" + _id} >
-            <button> Chat</button>
-              
-            </Link>
-          </div>
-        );
-      })}
-    </div>
+      <div className="grid grid-cols-1 lg:grid-cols-[340px_minmax(0,1fr)] gap-5 h-[calc(100vh-64px-56px-56px)] min-h-[560px]">
+        <ThreadList
+          connections={list}
+          selectedId={selectedId}
+          onSelect={onSelect}
+          copy={copy}
+        />
+        <Thread partner={partner} copy={copy} />
+      </div>
+    </>
   );
 };
 

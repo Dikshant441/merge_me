@@ -2,13 +2,14 @@ import { BrowserRouter, Routes, Route } from "react-router";
 import { Provider } from "react-redux";
 import appStore from "../../../store";
 import Body from "../layouts/MainLayout";
+import AppShell from "../layouts/AppShell";
 import LogIn from "../../pages/LoginPage";
 import Feed from "../../pages/FeedPage";
 import Profile from "../../pages/ProfilePage";
 import Connections from "../../pages/ConnectionsPage";
 import Requests from "../../pages/RequestsPage";
 import Premium from "../../pages/PremiumPage";
-import Chat from "../../pages/ChatPage";
+import Help from "../../pages/HelpPage";
 import LandingOrFeed from "../../pages/LandingOrFeedPage";
 
 function App() {
@@ -17,25 +18,24 @@ function App() {
       <Provider store={appStore}>
         <BrowserRouter basename="/">
           <Routes>
+            {/* Public — landing + auth. Keeps the old MainLayout chrome. */}
             <Route path="/" element={<Body />}>
-              {/* Index — landing for logged-out, feed for logged-in.
-                  Two locale-prefixed URLs render the same gate; useLocale()
-                  reads the segment to pick the COPY dictionary. */}
               <Route index element={<LandingOrFeed />} />
               <Route path="en-in" element={<LandingOrFeed />} />
               <Route path="hi-in" element={<LandingOrFeed />} />
-
-              {/* Auth */}
               <Route path="login" element={<LogIn />} />
               <Route path="signup" element={<LogIn />} />
+            </Route>
 
-              {/* Protected — pages handle their own auth-redirect. */}
+            {/* Protected — sidebar + topbar shell. Pages handle their own 401. */}
+            <Route element={<AppShell />}>
               <Route path="feed" element={<Feed />} />
-              <Route path="profile" element={<Profile />} />
               <Route path="connections" element={<Connections />} />
+              <Route path="chat/:userId" element={<Connections />} />
               <Route path="requests" element={<Requests />} />
+              <Route path="profile" element={<Profile />} />
               <Route path="premium" element={<Premium />} />
-              <Route path="chat/:userId" element={<Chat />} />
+              <Route path="help" element={<Help />} />
             </Route>
           </Routes>
         </BrowserRouter>

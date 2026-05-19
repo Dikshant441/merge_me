@@ -1,13 +1,20 @@
+import { useEffect } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router";
 import Landing from "../LandingPage";
-import Feed from "../FeedPage";
 
 // Index gate: logged-out visitors see the marketing landing page; logged-in
-// users see their feed. The MainLayout chrome (Navbar + Footer) is hidden
-// while Landing is shown — see MainLayout for the check.
+// users get redirected to /feed where the AppShell takes over.
 const LandingOrFeed = () => {
   const user = useSelector((s) => s.user);
-  return user ? <Feed /> : <Landing />;
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) navigate("/feed", { replace: true });
+  }, [user, navigate]);
+
+  if (user) return null;
+  return <Landing />;
 };
 
 export default LandingOrFeed;
