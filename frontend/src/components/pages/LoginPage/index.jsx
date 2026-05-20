@@ -1,147 +1,42 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
-import { useDispatch, useSelector } from "react-redux";
-import { addUser } from "../../../store/user/slice";
-import { useNavigate, useLocation } from "react-router";
-import { BASEURL } from "../../../constants";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router";
+import AuthNav from "../../features/auth/AuthNav";
+import Showcase from "../../features/auth/Showcase";
+import AuthForm from "../../features/auth/AuthForm";
+import { useLocale } from "../../../helpers/useLocale";
+import { getCopy } from "../../../constants/copy";
 
+// /login and /signup both render this page — the route segment picks the
+// tab, and clicking a tab inside <AuthForm /> navigates between the two.
 const Login = () => {
-  const [email, setEmail] = useState("trump@gmail.com");
-  const [password, setPassword] = useState("Trump@123");
-  const [first_name, setFirstName] = useState("");
-  const [last_name, setLastName] = useState("");
-  const [error, setError] = useState("");
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
   const location = useLocation();
-  const isLoginForm = location.pathname === "/login";
-  const user = useSelector((state) => state.user);
+  const navigate = useNavigate();
+  const user = useSelector((s) => s.user);
+  const locale = useLocale();
+  const copy = getCopy(locale);
 
+  const mode = location.pathname === "/signup" ? "signup" : "signin";
+
+  // Already signed in → straight to the index (which itself gates on user).
   useEffect(() => {
     if (user) navigate("/", { replace: true });
   }, [user, navigate]);
 
-  const handleLogin = async () => {
-    try {
-      const res = await axios.post(
-        BASEURL + "/login",
-        {
-          email,
-          password,
-        },
-        { withCredentials: true }
-      );
-      dispatch(addUser(res.data));
-      return navigate("/");
-    } catch (error) {
-      setError("Login failed: " + (error.response?.data || error.message));
-    }
-  };
-
-  const handleSignUp = async () => {
-    try {
-      const res = await axios.post(
-        BASEURL + "/signup",
-        {
-          first_name: first_name,
-          last_name: last_name,
-          email,
-          password,
-        },
-        { withCredentials: true }
-      );
-      dispatch(addUser(res.data.data));
-      return navigate("/");
-    } catch (err) {
-      setError("Signup failed: " + (err.response?.data || err.message));
-    }
-  };
+  const [showIdx, setShowIdx] = useState(0);
 
   return (
-    <div className="flex justify-center my-20">
-      <div className="card bg-base-300 w-96 shadow-xl">
-        <div className="card-body">
-          <h2 className="card-title justify-center">
-            {isLoginForm ? "Login" : "Sign Up"}
-          </h2>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              isLoginForm ? handleLogin() : handleSignUp();
-            }}
-          >
-            {!isLoginForm && (
-              <>
-                <label className="form-control w-full max-w-xs my-2">
-                  <div className="label">
-                    <span className="label-text">First Name</span>
-                  </div>
-                  <input
-                    type="text"
-                    value={first_name}
-                    className="input input-bordered w-full max-w-xs"
-                    onChange={(e) => setFirstName(e.target.value)}
-                  />
-                </label>
-                <label className="form-control w-full max-w-xs my-2">
-                  <div className="label">
-                    <span className="label-text">Last Name</span>
-                  </div>
-                  <input
-                    type="text"
-                    value={last_name}
-                    className="input input-bordered w-full max-w-xs"
-                    onChange={(e) => setLastName(e.target.value)}
-                  />
-                </label>
-              </>
-            )}
-            <label className="form-control w-full max-w-xs my-2">
-              <div className="label">
-                <span className="label-text">Email ID:</span>
-              </div>
-              <input
-                type="text"
-                value={email}
-                className="input input-bordered w-full max-w-xs"
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </label>
-            <label className="form-control w-full max-w-xs my-2">
-              <div className="label">
-                <span className="label-text">Password</span>
-              </div>
-              <input
-                type="password"
-                value={password}
-                className="input input-bordered w-full max-w-xs"
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </label>
-          </form>
-          <p className="text-red-500">{error}</p>
-          <div className="card-actions justify-center m-2">
-            <button
-              className="btn btn-primary"
-              onClick={isLoginForm ? handleLogin : handleSignUp}
-            >
-              {isLoginForm ? "Login" : "Sign Up"}
-            </button>
-          </div>
-
-          <p
-            className="m-auto cursor-pointer py-2"
-            onClick={() => {
-              navigate(isLoginForm ? "/signup" : "/login");
-            }}
-          >
-            {isLoginForm
-              ? "New User? Signup Here"
-              : "Existing User? Login Here"}
-          </p>
-        </div>
+    <div className="relative min-h-full bg-mm-bg text-mm-ink font-sans antialiased overflow-x-hidden">
+      <div className="landing-bg" />
+      <div className="relative z-[1] flex flex-col min-h-screen">
+        <AuthNav copy={copy} />
+        <main className="flex-1 grid grid-cols-[1.05fr_1fr] max-[980px]:grid-cols-1 gap-8 px-8 pt-2 pb-12 max-w-[1280px] w-full mx-auto items-stretch max-[520px]:px-5">
+          <Showcase copy={copy} idx={showIdx} setIdx={setShowIdx} />
+          <AuthForm copy={copy} mode={mode} />
+        </main>
       </div>
     </div>
   );
 };
+
 export default Login;

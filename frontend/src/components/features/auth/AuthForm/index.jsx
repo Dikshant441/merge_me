@@ -1,0 +1,350 @@
+import { useMemo, useState } from "react";
+import axios from "axios";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router";
+import { ArrowRight, Check, Code, Shield, AlertCircle } from "lucide-react";
+import OAuthRow from "../OAuthRow";
+import { BASEURL } from "../../../../constants";
+import { addUser } from "../../../../store/user/slice";
+
+// Cheap 0-4 password score. Each rule is one point so we get a stable label
+// progression for the UI bars — see copy.auth.pwd0..pwd4.
+const pwScore = (pwd) => {
+  if (!pwd) return 0;
+  let s = 0;
+  if (pwd.length >= 8) s++;
+  if (/[A-Z]/.test(pwd) && /[a-z]/.test(pwd)) s++;
+  if (/\d/.test(pwd)) s++;
+  if (/[^A-Za-z0-9]/.test(pwd) || pwd.length >= 12) s++;
+  return s;
+};
+
+const PERK_ICONS = { check: Check, code: Code, shield: Shield };
+
+const AuthForm = ({ copy, mode }) => {
+  const isSignUp = mode === "signup";
+  const t = copy.auth;
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPwd, setShowPwd] = useState(false);
+  const [remember, setRemember] = useState(true);
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const score = useMemo(() => pwScore(password), [password]);
+  const scoreLabel = [t.pwd0, t.pwd1, t.pwd2, t.pwd3, t.pwd4][score];
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (submitting) return;
+    setError("");
+    setSubmitting(true);
+    try {
+      if (isSignUp) {
+        const res = await axios.post(
+          BASEURL + "/signup",
+          { first_name: firstName, last_name: lastName, email, password },
+          { withCredentials: true }
+        );
+        dispatch(addUser(res.data.data));
+      } else {
+        const res = await axios.post(
+          BASEURL + "/login",
+          { email, password },
+          { withCredentials: true }
+        );
+        dispatch(addUser(res.data));
+      }
+      navigate("/");
+    } catch (err) {
+      const reason = err.response?.data || err.message;
+      setError((isSignUp ? "Signup failed: " : "Login failed: ") + reason);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="bg-mm-surface border border-mm-border rounded-3xl shadow-[var(--mm-shadow-card)] p-10 max-[980px]:p-7 min-h-[560px] flex flex-col items-center">
+      <div className="w-full max-w-[380px]">
+        {/* Mode tabs — clicking navigates the route so a deep link to /login
+            or /signup picks the right tab. */}
+        <div
+          role="tablist"
+          className="inline-flex bg-mm-paper border border-mm-border rounded-full p-1 gap-0.5 mb-7"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={!isSignUp}
+            onClick={() => navigate("/login")}
+            className={[
+              "px-4 py-2 rounded-full text-[13px] font-medium transition",
+              !isSignUp
+                ? "bg-mm-ink text-mm-bg shadow-[0_1px_0_rgba(255,255,255,.16)_inset,0_1px_2px_rgba(0,0,0,.18)]"
+                : "text-mm-ink-2 hover:text-mm-ink",
+            ].join(" ")}
+          >
+            {t.tabSignIn}
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={isSignUp}
+            onClick={() => navigate("/signup")}
+            className={[
+              "px-4 py-2 rounded-full text-[13px] font-medium transition",
+              isSignUp
+                ? "bg-mm-ink text-mm-bg shadow-[0_1px_0_rgba(255,255,255,.16)_inset,0_1px_2px_rgba(0,0,0,.18)]"
+                : "text-mm-ink-2 hover:text-mm-ink",
+            ].join(" ")}
+          >
+            {t.tabSignUp}
+          </button>
+        </div>
+
+        <h1 className="font-sans font-semibold tracking-[-0.025em] leading-[1.1] text-[clamp(26px,2.6vw,34px)] mb-2.5 text-balance">
+          {isSignUp ? (
+            <>
+              {t.signUpTitleA}
+              <em className="not-italic font-serif italic font-normal text-[1.08em] mm-grad-text">
+                {t.signUpTitleEm}
+              </em>
+              {t.signUpTitleB}
+            </>
+          ) : (
+            <>
+              {t.signInTitleA}
+              <em className="not-italic font-serif italic font-normal text-[1.08em] mm-grad-text">
+                {t.signInTitleEm}
+              </em>
+              {t.signInTitleB}
+            </>
+          )}
+        </h1>
+        <p className="text-mm-ink-2 text-[15px] max-w-[360px] mb-7">
+          {isSignUp ? t.signUpSub : t.signInSub}
+        </p>
+
+        {isSignUp && (
+          <div className="flex flex-col gap-2.5 mb-[22px]">
+            {t.perks.map(([icon, head, tail]) => {
+              const I = PERK_ICONS[icon] || Check;
+              return (
+                <div key={head} className="flex items-start gap-2.5 text-[13px] text-mm-ink-2 leading-[1.45]">
+                  <span className="shrink-0 w-[22px] h-[22px] rounded-[7px] bg-mm-paper border border-mm-border text-mm-coral-2 inline-flex items-center justify-center mt-px">
+                    <I size={12} strokeWidth={2} />
+                  </span>
+                  <span>
+                    <b className="text-mm-ink font-semibold">{head}</b>
+                    {tail}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <OAuthRow copy={copy} />
+
+        <div className="flex items-center gap-3 my-[18px] text-mm-ink-3 font-mono font-medium text-[11px] tracking-[0.08em] uppercase">
+          <span className="flex-1 h-px bg-mm-border" />
+          {t.divider}
+          <span className="flex-1 h-px bg-mm-border" />
+        </div>
+
+        {error && (
+          <div className="mb-4 p-3 bg-[oklch(0.95_0.04_25)] border border-[oklch(0.85_0.10_25)] text-[oklch(0.42_0.18_25)] rounded-[10px] text-[13px] font-medium flex items-start gap-2 dark:bg-[oklch(0.30_0.10_25/0.4)] dark:border-[oklch(0.50_0.15_25/0.6)] dark:text-[oklch(0.85_0.10_25)]">
+            <AlertCircle size={16} strokeWidth={1.7} className="shrink-0 mt-px" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} noValidate>
+          {isSignUp && (
+            <div className="grid grid-cols-2 gap-3 max-[520px]:grid-cols-1">
+              <Field label={t.fldFirst} htmlFor="first">
+                <input
+                  id="first"
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder={t.fldFirstPh}
+                  autoComplete="given-name"
+                  className="flex-1 min-w-0 h-full px-3.5 bg-transparent border-0 outline-0 text-mm-ink text-sm font-medium placeholder:text-mm-ink-4"
+                />
+              </Field>
+              <Field label={t.fldLast} htmlFor="last">
+                <input
+                  id="last"
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder={t.fldLastPh}
+                  autoComplete="family-name"
+                  className="flex-1 min-w-0 h-full px-3.5 bg-transparent border-0 outline-0 text-mm-ink text-sm font-medium placeholder:text-mm-ink-4"
+                />
+              </Field>
+            </div>
+          )}
+
+          <Field label={t.fldEmail} htmlFor="email">
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={t.fldEmailPh}
+              autoComplete="email"
+              className="flex-1 min-w-0 h-full px-3.5 bg-transparent border-0 outline-0 text-mm-ink text-sm font-medium placeholder:text-mm-ink-4"
+            />
+          </Field>
+
+          <Field
+            label={t.fldPwd}
+            htmlFor="pwd"
+            trailing={
+              !isSignUp && (
+                <a
+                  href="#"
+                  onClick={(e) => e.preventDefault()}
+                  className="text-mm-coral-2 dark:text-mm-coral font-medium hover:underline"
+                >
+                  {t.forgot}
+                </a>
+              )
+            }
+          >
+            <input
+              id="pwd"
+              type={showPwd ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder={isSignUp ? t.fldPwdPhSignUp : t.fldPwdPhSignIn}
+              autoComplete={isSignUp ? "new-password" : "current-password"}
+              className="flex-1 min-w-0 h-full px-3.5 bg-transparent border-0 outline-0 text-mm-ink text-sm font-medium placeholder:text-mm-ink-4"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPwd((s) => !s)}
+              className="h-full px-3 text-mm-ink-3 hover:text-mm-ink font-mono font-medium text-[11px] tracking-wider uppercase"
+            >
+              {showPwd ? t.hide : t.show}
+            </button>
+          </Field>
+
+          {isSignUp && (
+            <div className="-mt-2 mb-3.5">
+              <div className="flex gap-1" aria-hidden>
+                {[1, 2, 3, 4].map((i) => (
+                  <span
+                    key={i}
+                    className={[
+                      "mm-pw-bar flex-1 h-[3px] rounded-full transition",
+                      score >= i ? "on-" + score : "",
+                    ].join(" ")}
+                  />
+                ))}
+              </div>
+              <div className="mt-1.5 font-mono font-medium text-[11px] text-mm-ink-3">
+                {scoreLabel}
+              </div>
+            </div>
+          )}
+
+          {!isSignUp && (
+            <label className="flex items-center gap-2 mb-[18px] text-[13px] font-medium text-mm-ink-2 select-none">
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+                className="appearance-none w-4 h-4 rounded border border-mm-border-2 bg-mm-paper checked:bg-mm-ink checked:border-mm-ink relative after:content-[''] after:absolute after:inset-[3px] after:bg-mm-bg after:opacity-0 checked:after:opacity-100 after:[clip-path:polygon(15%_50%,0_65%,40%_100%,100%_25%,85%_15%,38%_65%)]"
+              />
+              <span>{t.remember}</span>
+            </label>
+          )}
+
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full h-12 rounded-[12px] bg-mm-ink text-mm-bg text-sm font-medium inline-flex items-center justify-center gap-2 hover:-translate-y-px disabled:opacity-60 disabled:translate-y-0 transition shadow-[0_1px_0_rgba(255,255,255,.16)_inset,0_1px_2px_rgba(0,0,0,.18),0_8px_16px_-8px_rgba(40,24,8,.4)]"
+          >
+            {isSignUp ? (
+              <code className="font-mono font-medium text-[13px]">{t.submitSignUp}</code>
+            ) : (
+              <span>{t.submitSignIn}</span>
+            )}
+            <ArrowRight size={16} strokeWidth={1.7} />
+          </button>
+        </form>
+
+        <div className="mt-[22px] text-center text-mm-ink-3 text-[13px]">
+          {isSignUp ? (
+            <>
+              {t.footSignUp}
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/login");
+                }}
+                className="text-mm-ink font-medium hover:underline"
+              >
+                {t.footSignUpLink}
+              </a>
+            </>
+          ) : (
+            <>
+              {t.footSignIn}
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/signup");
+                }}
+                className="text-mm-ink font-medium hover:underline"
+              >
+                {t.footSignInLink}
+              </a>
+            </>
+          )}
+        </div>
+
+        <p className="mt-7 text-center text-mm-ink-3 text-xs leading-[1.5]">
+          {t.legalA}
+          <a href="#" onClick={(e) => e.preventDefault()} className="text-mm-ink-2 underline decoration-mm-ink-4">
+            {t.legalTerms}
+          </a>
+          {t.legalAnd}
+          <a href="#" onClick={(e) => e.preventDefault()} className="text-mm-ink-2 underline decoration-mm-ink-4">
+            {t.legalPrivacy}
+          </a>
+          {t.legalEnd}
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// Tiny field wrapper — keeps the input pill consistent between email, name,
+// and password rows. The focus ring lives on .mm-auth-input so it wraps the
+// trailing show/hide button too.
+const Field = ({ label, htmlFor, trailing, children }) => (
+  <div className="flex flex-col gap-1.5 mb-3.5">
+    <label htmlFor={htmlFor} className="text-xs font-medium text-mm-ink-2 flex items-baseline justify-between">
+      <span>{label}</span>
+      {trailing}
+    </label>
+    <div className="mm-auth-input flex items-center h-11 bg-mm-paper border border-mm-border-2 rounded-[10px] transition">
+      {children}
+    </div>
+  </div>
+);
+
+export default AuthForm;
