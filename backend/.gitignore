@@ -17,3 +17,5 @@ apiList.md
 .codex/
 CLAUDE.md
 AGENTS.md
+
+/src/generated/prisma
