@@ -1,11 +1,9 @@
-const mongoose = require("mongoose");
-const validator = require("validator");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
+import mongoose, { Schema } from "mongoose";
+import validator from "validator";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 
-const { Schema } = mongoose;
-
-const userSchema = Schema(
+const userSchema = new Schema(
   {
     first_name: {
       type: String,
@@ -22,7 +20,7 @@ const userSchema = Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      validate(value) {
+      validate(value: string) {
         if (!validator.isEmail(value)) {
           throw new Error("Invalid Email format" + value);
         }
@@ -31,7 +29,7 @@ const userSchema = Schema(
     password: {
       type: String,
       required: true,
-      validate(value) {
+      validate(value: string) {
         if (!validator.isStrongPassword(value)) {
           throw new Error("Enter a strong password: " + value);
         }
@@ -44,7 +42,7 @@ const userSchema = Schema(
     },
     gender: {
       type: String,
-      validate(value) {
+      validate(value: string) {
         if (!["Male", "Female", "Other"].includes(value)) {
           throw new Error("Gender must be Male, Female, or Other");
         }
@@ -74,25 +72,23 @@ const userSchema = Schema(
   }
 );
 
-userSchema.methods.getJWT = async function () {
+userSchema.methods.getJWT = async function (): Promise<string> {
   const user = this;
-
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET as string, {
     expiresIn: "1h",
   });
-
   return token;
 };
 
-userSchema.methods.validationPassword = async function (inputPassword) {
-  const user = this;
+userSchema.methods.validationPassword = async function (
+  inputPassword: string
+): Promise<boolean> {
+  const user = this as any;
   const passwordHash = user.password;
-
   const isPasswordvalid = await bcrypt.compare(inputPassword, passwordHash);
-
   return isPasswordvalid;
 };
 
 const Usermodel = mongoose.model("User", userSchema);
 
-module.exports = Usermodel;
+export default Usermodel;

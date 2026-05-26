@@ -1,25 +1,25 @@
-const socket = require("socket.io");
-const crypto = require("crypto");
-const Chat = require("../models/chat");
+import { Server as SocketIOServer, Socket } from "socket.io";
+import type { Server as HTTPServer } from "http";
+import crypto from "crypto";
+import Chat from "../models/chat";
 
-
-const getSecretRoomId = (userID, targetUserId) => {
+const getSecretRoomId = (userID: string, targetUserId: string): string => {
   return crypto
     .createHash("sha256")
     .update([userID, targetUserId].sort().join("$"))
     .digest("hex");
 };
 
-const initChatServer = (server) => {
-  const io = socket(server, {
+const initChatServer = (server: HTTPServer): void => {
+  const io = new SocketIOServer(server, {
     cors: {
       origin: "http://localhost:5173",
       credentials: true,
     },
   });
 
-  io.on("connection", (socket) => {
-    socket.on("joinChat", ({ firstName, userID, targetUserId }) => {
+  io.on("connection", (socket: Socket) => {
+    socket.on("joinChat", ({ firstName, userID, targetUserId }: any) => {
       const roomId = getSecretRoomId(userID, targetUserId);
       console.log(firstName + " joined roomId " + roomId);
       socket.join(roomId);
@@ -27,18 +27,17 @@ const initChatServer = (server) => {
 
     socket.on(
       "sendMessage",
-      async ({ firstName, lastName, userID, targetUserId, message }) => {
+      async ({ firstName, lastName, userID, targetUserId, message }: any) => {
         const roomId = getSecretRoomId(userID, targetUserId);
         console.log(firstName + " send message " + message);
 
-        // save message into DB
         try {
           const roomId = getSecretRoomId(userID, targetUserId);
           console.log(firstName + " " + message);
 
           // TODO: Check if userID & targetUserId are friends
 
-          let chat = await Chat.findOne({ 
+          let chat: any = await Chat.findOne({
             participants: { $all: [userID, targetUserId] },
           });
 
@@ -53,18 +52,18 @@ const initChatServer = (server) => {
             senderId: userID,
             message,
           });
- 
+
           await chat.save();
           io.to(roomId).emit("messageReceived", { firstName, lastName, message });
         } catch (err) {
           console.log(err);
         }
         io.to(roomId).emit("receivedMessage", { firstName, lastName, message });
-      },
+      }
     );
 
     socket.on("disconnect", () => {});
   });
 };
 
-module.exports = initChatServer;
+export default initChatServer;

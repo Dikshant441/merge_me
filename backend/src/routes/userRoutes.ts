@@ -1,12 +1,13 @@
-const express = require("express");
-const { userAuth } = require("../middleware/auth");
+import express, { Request, Response } from "express";
+import { userAuth } from "../middleware/auth";
+import ConnectionRequestmodel from "../models/connectionRequest";
+import Usermodel from "../models/user";
+
 const userRouter = express.Router();
-const ConnectionRequestmodel = require("../models/connectionRequest");
-const Usermodel = require("../models/user");
 
 const USER_SAFE_DATA = "first_name last_name photoURL age gender about skills";
 
-userRouter.get("/user/requests/received", userAuth, async (req, res) => {
+userRouter.get("/user/requests/received", userAuth, async (req: Request, res: Response) => {
   try {
     const loggedInUser = req.user;
 
@@ -19,12 +20,12 @@ userRouter.get("/user/requests/received", userAuth, async (req, res) => {
       message: "Data fetch sucessfully",
       data: connectionRequest,
     });
-  } catch (error) {
+  } catch (error: any) {
     res.status(400).send("Error" + error.message);
   }
 });
 
-userRouter.get("/user/connections", userAuth, async (req, res) => {
+userRouter.get("/user/connections", userAuth, async (req: Request, res: Response) => {
   try {
     const loggedInUser = req.user;
 
@@ -36,9 +37,8 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
     })
       .populate("fromUserId", USER_SAFE_DATA)
       .populate("toUserId", USER_SAFE_DATA);
-    // }).populate("fromUserId", ["first_name", "last_name", "age", "gender"]);
 
-    const data = connectionRequest.map((row) => {
+    const data = connectionRequest.map((row: any) => {
       if (row.fromUserId._id.toString() == loggedInUser._id.toString()) {
         return row.toUserId;
       }
@@ -49,18 +49,17 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
       message: "Data fetch sucessfully",
       data,
     });
-  } catch (error) {
+  } catch (error: any) {
     res.status(400).send("Error" + error.message);
   }
 });
 
-userRouter.get("/feed", userAuth, async (req, res) => {
+userRouter.get("/feed", userAuth, async (req: Request, res: Response) => {
   try {
     const loggedInUser = req.user;
 
-    // pagination for feed
-    const page = parseInt(req.query.page) || 1;
-    let limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page as string) || 1;
+    let limit = parseInt(req.query.limit as string) || 10;
 
     limit = limit > 50 ? 50 : limit;
 
@@ -70,10 +69,10 @@ userRouter.get("/feed", userAuth, async (req, res) => {
       $or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }],
     }).select("fromUserId toUserId");
 
-    const hideUserFromFeed = new Set();
-    connectionRequest.forEach((req) => {
-      hideUserFromFeed.add(req.fromUserId.toString());
-      hideUserFromFeed.add(req.toUserId.toString());
+    const hideUserFromFeed = new Set<string>();
+    connectionRequest.forEach((r: any) => {
+      hideUserFromFeed.add(r.fromUserId.toString());
+      hideUserFromFeed.add(r.toUserId.toString());
     });
 
     const users = await Usermodel.find({
@@ -87,9 +86,9 @@ userRouter.get("/feed", userAuth, async (req, res) => {
       .limit(limit);
 
     res.send(users);
-  } catch (error) {
+  } catch (error: any) {
     res.status(404).send("Error" + error.message);
   }
 });
 
-module.exports = userRouter;
+export default userRouter;

@@ -1,14 +1,14 @@
-const mongoose = require("mongoose");
+import mongoose, { Schema } from "mongoose";
 
-const connectionrequestSchema = new mongoose.Schema(
+const connectionrequestSchema = new Schema(
   {
     fromUserId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
     toUserId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
@@ -29,15 +29,15 @@ const connectionrequestSchema = new mongoose.Schema(
 connectionrequestSchema.index({ fromUserId: 1, toUserId: 1 });
 
 connectionrequestSchema.pre("save", function () {
-  const connectionRequest = this;
+  const connectionRequest = this as any;
   if (connectionRequest.fromUserId.equals(connectionRequest.toUserId)) {
     throw new Error("Cant connection youself !! ");
   }
 });
 
-const ConnectionRequestmodel = new mongoose.model(
+const ConnectionRequestmodel = mongoose.model(
   "ConectionRequest",
   connectionrequestSchema
 );
 
-module.exports = ConnectionRequestmodel;
+export default ConnectionRequestmodel;

@@ -1,18 +1,18 @@
-const express = require("express");
-const { userAuth } = require("../middleware/auth");
-const ConnectionRequestmodel = require("../models/connectionRequest");
-const User = require("../models/user");
+import express, { Request, Response } from "express";
+import { userAuth } from "../middleware/auth";
+import ConnectionRequestmodel from "../models/connectionRequest";
+import User from "../models/user";
 
 const requestRouter = express.Router();
 
 requestRouter.post(
   "/request/send/:status/:touserId",
   userAuth,
-  async (req, res) => {
+  async (req: Request, res: Response): Promise<any> => {
     try {
       const fromUserId = req.user._id;
-      const toUserId = req.params.touserId;
-      const status = req.params.status;
+      const toUserId = req.params.touserId as string;
+      const status = req.params.status as string;
 
       const allowedStatus = ["ignored", "interested"];
 
@@ -52,10 +52,10 @@ requestRouter.post(
 
       res.send({
         message:
-          req.user.first_name + " is " + status + " in " + toUser.first_name,
+          req.user.first_name + " is " + status + " in " + (toUser as any).first_name,
         data,
       });
-    } catch (error) {
+    } catch (error: any) {
       res.status(400).send("Error: " + error.message);
     }
   }
@@ -64,17 +64,18 @@ requestRouter.post(
 requestRouter.post(
   "/request/review/:status/:requestId",
   userAuth,
-  async (req, res) => {
+  async (req: Request, res: Response): Promise<any> => {
     try {
       const loggedInUser = req.user;
-      const { status, requestId } = req.params;
+      const status = req.params.status as string;
+      const requestId = req.params.requestId as string;
 
       const allowedStatus = ["accepted", "rejected"];
       if (!allowedStatus.includes(status)) {
         return res.status(400).json({ message: "Status not allowed!!" });
       }
 
-      const connectionRequest = await ConnectionRequestmodel.findOne({
+      const connectionRequest: any = await ConnectionRequestmodel.findOne({
         _id: requestId,
         toUserId: loggedInUser._id,
         status: "interested",
@@ -91,10 +92,10 @@ requestRouter.post(
       const data = await connectionRequest.save();
 
       res.json({ message: "Connection request " + status, data });
-    } catch (err) {
+    } catch (err: any) {
       res.status(404).send("Error" + err.message);
     }
   }
 );
 
-module.exports = requestRouter;
+export default requestRouter;

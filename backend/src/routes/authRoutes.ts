@@ -1,85 +1,77 @@
-const express = require("express");
-const Usermodel = require("../models/user");
-const bcrypt = require("bcrypt");
-const { isignUpValidtion } = require("../validators/validation");
+import express, { Request, Response } from "express";
+import bcrypt from "bcrypt";
+import Usermodel from "../models/user";
+import { isignUpValidtion } from "../validators/validation";
 
 const authRouter = express.Router();
 
-authRouter.post("/signup", async (req, res) => {
+authRouter.post("/signup", async (req: Request, res: Response) => {
   const { first_name, last_name, email, password } = req.body;
   try {
-    // 1. => validation of data
     isignUpValidtion(req);
 
-    // 2. => Encrypt data
     const hashpassword = await bcrypt.hash(password, 10);
 
-    // 3. => create a new instance of user model
     const user = new Usermodel({
-      first_name: first_name,
-      last_name: last_name,
-      email: email,
+      first_name,
+      last_name,
+      email,
       password: hashpassword,
     });
 
-
     const savedUser = await user.save();
-    const token = await savedUser.getJWT();
+    const token = await (savedUser as any).getJWT();
 
     res.cookie("token", token, {
       expires: new Date(Date.now() + 8 * 3600000),
     });
 
     res.json({ message: "User Added successfully!", data: savedUser });
-
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
     res.status(400).send(error.message);
   }
 });
 
-authRouter.post("/login", async (req, res) => {
+authRouter.post("/login", async (req: Request, res: Response) => {
   const { email, password } = req.body;
   try {
-    // 1. => check if user exists
-    const user = await Usermodel.findOne({ email: email });
+    const user = await Usermodel.findOne({ email });
     if (!user) {
       throw new Error(" Invalid credentials " + email);
     }
 
-    // 2. => compare password
-    const isPasswordMatch = await user.validationPassword(password);
+    const isPasswordMatch = await (user as any).validationPassword(password);
 
     if (isPasswordMatch) {
-      // 2.1 => create query token (JWT or session)
-      const token = await user.getJWT();
+      const token = await (user as any).getJWT();
 
-      // 2.2 => add the token to cookie and send the response back to the user
       res.cookie("token", token, {
-        expires: new Date(Date.now() + 1 * 3600000), // cookie will be removed after 1 h,
+        expires: new Date(Date.now() + 1 * 3600000),
       });
 
       res.send(user);
     } else {
       throw new Error("Invalid credentials");
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
     res.status(400).send(error.message);
   }
 });
 
-authRouter.post("/logout", async (req, res) => {
+authRouter.post("/logout", async (_req: Request, res: Response) => {
   try {
     res
       .cookie("token", null, {
         expires: new Date(Date.now()),
       })
       .send("Logout successful");
-  } catch (error) {
+  } catch (error: any) {
+
     console.error(error);
     res.status(400).send(error.message);
   }
 });
 
-module.exports = authRouter;
+export default authRouter;

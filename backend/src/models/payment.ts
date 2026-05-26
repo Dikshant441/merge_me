@@ -1,9 +1,9 @@
-const mongoose = require("mongoose");
+import mongoose, { Schema } from "mongoose";
 
-const paymrentSchema = new mongoose.Schema(
+const paymrentSchema = new Schema(
   {
     userId: {
-      type: mongoose.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
@@ -31,18 +31,12 @@ const paymrentSchema = new mongoose.Schema(
       required: true,
     },
     notes: {
-      first_name: {
-        type: String,
-      },
-      last_name: {
-        type: String,
-      },
-      membershipType: {
-        type: String,
-      },
+      first_name: { type: String },
+      last_name: { type: String },
+      membershipType: { type: String },
     },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Payment", paymrentSchema);
+export default mongoose.model("Payment", paymrentSchema);

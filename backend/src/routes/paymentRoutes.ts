@@ -1,16 +1,16 @@
-require("dotenv").config();
-const express = require("express");
-const paymentRouter = express.Router();
-const { userAuth } = require("../middleware/auth");
-const User = require("../models/user");
-const razorpayInstance = require("../lib/razorpay");
-const Payment = require("../models/payment");
-const MermbershipPrice = require("../utils/constants");
-const {
-  validateWebhookSignature,
-} = require("razorpay/dist/utils/razorpay-utils");
+import "dotenv/config";
+import express, { Request, Response } from "express";
+import { userAuth } from "../middleware/auth";
+import User from "../models/user";
+import razorpayInstance from "../lib/razorpay";
+import Payment from "../models/payment";
+import MermbershipPrice from "../utils/constants";
+// @ts-ignore - razorpay subpath utils ship no .d.ts
+import { validateWebhookSignature } from "razorpay/dist/utils/razorpay-utils";
 
-paymentRouter.post("/payment/create", userAuth, async (req, res) => {
+const paymentRouter = express.Router();
+
+paymentRouter.post("/payment/create", userAuth, async (req: Request, res: Response) => {
   try {
     const { membershipType } = req.body;
     const { first_name, last_name, emailId } = req.user;
@@ -20,10 +20,10 @@ paymentRouter.post("/payment/create", userAuth, async (req, res) => {
       currency: "INR",
       receipt: "receipt#1",
       notes: {
-        first_name: first_name,
-        last_name: last_name,
-        emailId: emailId,
-        membershipType: membershipType,
+        first_name,
+        last_name,
+        emailId,
+        membershipType,
       },
     });
 
@@ -37,26 +37,24 @@ paymentRouter.post("/payment/create", userAuth, async (req, res) => {
       notes: order.notes,
     });
 
-    // saev it to database
     const savedPayment = await payment.save();
 
-    // res.json({ ...savedPayment });  check tis this not work
     res.json({ ...savedPayment.toJSON(), key_id: process.env.RAZORPAY_KEY_ID });
-  } catch (err) {
+  } catch (err: any) {
     res.status(401).send("Error" + err.message);
   }
 });
 
-paymentRouter.post("/payment/webhook", async (req, res) => {
+paymentRouter.post("/payment/webhook", async (req: Request, res: Response): Promise<any> => {
   try {
     console.log("Webhook Called");
     const webhookSignature = req.get("X-Razorpay-Signature");
     console.log("Webhook Signature", webhookSignature);
 
     const isWebhookValid = validateWebhookSignature(
-      req.rawBody.toString(),
-      webhookSignature,
-      process.env.RAZORPAY_WEBHOOK_SECRET
+      req.rawBody!.toString(),
+      webhookSignature as string,
+      process.env.RAZORPAY_WEBHOOK_SECRET as string
     );
 
     console.log("Is Webhook Valid", isWebhookValid);
@@ -67,48 +65,35 @@ paymentRouter.post("/payment/webhook", async (req, res) => {
     }
     console.log("Valid Webhook Signature");
 
-    // Udpate my payment Status in DB
     const paymentDetails = req.body.payload.payment.entity;
 
-    const payment = await Payment.findOne({ orderId: paymentDetails.order_id });
+    const payment: any = await Payment.findOne({ orderId: paymentDetails.order_id });
     payment.status = paymentDetails.status;
     await payment.save();
     console.log("Payment saved");
 
-    const user = await User.findOne({ _id: payment.userId });
+    const user: any = await User.findOne({ _id: payment.userId });
     user.isPremium = true;
     user.membershipType = payment.notes.membershipType;
     console.log("User saved");
 
     await user.save();
 
-    // Update the user as premium
-
-    // if (req.body.event == "payment.captured") {
-    // }
-    // if (req.body.event == "payment.failed") {
-    // }
-
-    // return success response to razorpay
-
     return res.status(200).json({ msg: "Webhook received successfully" });
-  } catch (err) {
+  } catch (err: any) {
     return res.status(500).json({ msg: err.message });
   }
 });
 
-
-paymentRouter.get("/premium/verify", userAuth, async (req, res) => {
+paymentRouter.get("/premium/verify", userAuth, async (req: Request, res: Response) => {
   console.log("Api Called");
-  const user  = req.user.toJSON();
+  const user = req.user.toJSON();
   console.log(user);
 
-  if(user.isPremium){
-    return res.json({ ...user});
+  if (user.isPremium) {
+    return res.json({ ...user });
   }
-  return res.json({ ...user});
-
+  return res.json({ ...user });
 });
 
-
-module.exports = paymentRouter;
+export default paymentRouter;
