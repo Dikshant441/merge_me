@@ -14,12 +14,20 @@ import paymentRouter from "./routes/paymentRoutes";
 import chatRouter from "./routes/chatRoutes";
 import initChatServer from "./sockets";
 
+
+
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const frontendOrigins = (process.env.FRONTEND_URL ?? "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://3.107.231.184"],
+    origin: frontendOrigins,
     credentials: true,
   })
 );

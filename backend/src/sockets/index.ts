@@ -11,9 +11,14 @@ const getSecretRoomId = (userID: string, targetUserId: string): string => {
 };
 
 const initChatServer = (server: HTTPServer): void => {
+  const frontendOrigins = (process.env.FRONTEND_URL ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
   const io = new SocketIOServer(server, {
     cors: {
-      origin: "http://localhost:5173",
+      origin: frontendOrigins,
       credentials: true,
     },
   });
