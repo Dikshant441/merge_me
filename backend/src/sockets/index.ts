@@ -24,21 +24,21 @@ const initChatServer = (server: HTTPServer): void => {
   });
 
   io.on("connection", (socket: Socket) => {
-    socket.on("joinChat", ({ firstName, userID, targetUserId }: any) => {
+    socket.on("joinChat", ({ first_name, userID, targetUserId }: any) => {
       const roomId = getSecretRoomId(userID, targetUserId);
-      console.log(firstName + " joined roomId " + roomId);
+      console.log(first_name + " joined roomId " + roomId);
       socket.join(roomId);
     });
 
     socket.on(
       "sendMessage",
-      async ({ firstName, lastName, userID, targetUserId, message }: any) => {
+      async ({ first_name, last_name, userID, targetUserId, message }: any) => {
         const roomId = getSecretRoomId(userID, targetUserId);
-        console.log(firstName + " send message " + message);
+        console.log(first_name + " send message " + message);
 
         try {
           const roomId = getSecretRoomId(userID, targetUserId);
-          console.log(firstName + " " + message);
+          console.log(first_name + " " + message);
 
           // TODO: Check if userID & targetUserId are friends
 
@@ -59,11 +59,11 @@ const initChatServer = (server: HTTPServer): void => {
           });
 
           await chat.save();
-          io.to(roomId).emit("messageReceived", { firstName, lastName, message });
+          io.to(roomId).emit("messageReceived", { first_name, last_name, message });
         } catch (err) {
           console.log(err);
         }
-        io.to(roomId).emit("receivedMessage", { firstName, lastName, message });
+        io.to(roomId).emit("receivedMessage", { first_name, last_name, message });
       }
     );
 

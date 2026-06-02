@@ -1,4 +1,53 @@
 import validator from "validator";
+import { z } from "zod";
+
+export const signupSchema = z
+  .object({
+    email: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .pipe(z.email("Invalid email").max(254, "Email too long")),
+    password: z
+      .string()
+      .min(8, "Must be at least 8 characters")
+      .max(20, "Must be at most 20 characters")
+      .regex(/[A-Z]/, "Must contain an uppercase letter")
+      .regex(/[a-z]/, "Must contain a lowercase letter")
+      .regex(/\d/, "Must contain a digit")
+      .regex(/[^A-Za-z0-9]/, "Must contain a special character"),
+    first_name: z
+      .string()
+      .trim()
+      .min(2, "First name is required")
+      .max(100, "First name is too long"),
+    last_name: z
+      .string()
+      .trim()
+      .min(2, "Last name is required")
+      .max(100, "Last name is too long"),
+  })
+  .strict();
+
+
+const loginSchema = z
+  .object({
+    email: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .pipe(z.email("Invalid email address").max(254, "Email is too long")),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .max(20, "Password must be at most 20 characters")
+  })
+  .strict();
+
+export type SignupInput = z.infer<typeof signupSchema>;
+export type LoginInput = z.infer<typeof loginSchema>;
+  
+
 
 const isignUpValidtion = (req: any) => {
   const { first_name, last_name, email, password, age, gender, skills } = req.body;
@@ -10,7 +59,7 @@ const isignUpValidtion = (req: any) => {
   } else if (!validator.isEmail(email)) {
     throw new Error("Invalid email format post.");
   } else if (
-    !validator.isStrongPassword(password, {
+    !validator.isStrongPassword(password, { 
       minLength: 8,
       minLowercase: 1,
       minUppercase: 1,
@@ -42,12 +91,11 @@ const validatedEditProfiledata = (req: any) => {
   const allowedValidateFields = [
     "first_name",
     "last_name",
-    "email",
+    "about",
+    "skills",
     "age",
     "gender",
-    "skills",
-    "photoURL",
-    "about",
+    "avatarUrl",
   ];
 
   const isEditAllowed = Object.keys(req.body).every((filed) =>
