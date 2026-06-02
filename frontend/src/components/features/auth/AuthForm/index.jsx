@@ -28,8 +28,8 @@ const AuthForm = ({ copy, mode }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [first_name, setFirstName] = useState("");
+  const [last_name, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
@@ -49,7 +49,7 @@ const AuthForm = ({ copy, mode }) => {
       if (isSignUp) {
         const res = await axios.post(
           BASEURL + "/signup",
-          { first_name: firstName, last_name: lastName, email, password },
+          { first_name, last_name, email, password },
           { withCredentials: true }
         );
         dispatch(addUser(res.data.data));
@@ -173,7 +173,7 @@ const AuthForm = ({ copy, mode }) => {
                 <input
                   id="first"
                   type="text"
-                  value={firstName}
+                  value={first_name}
                   onChange={(e) => setFirstName(e.target.value)}
                   placeholder={t.fldFirstPh}
                   autoComplete="given-name"
@@ -184,7 +184,7 @@ const AuthForm = ({ copy, mode }) => {
                 <input
                   id="last"
                   type="text"
-                  value={lastName}
+                  value={last_name}
                   onChange={(e) => setLastName(e.target.value)}
                   placeholder={t.fldLastPh}
                   autoComplete="family-name"

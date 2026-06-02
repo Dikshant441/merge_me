@@ -34,8 +34,8 @@ const Thread = ({ partner, copy }) => {
         });
         if (cancelled) return;
         const history = (res?.data?.messages || []).map((msg) => ({
-          firstName: msg.senderId?.first_name,
-          lastName: msg.senderId?.last_name,
+          first_name: msg.senderId?.first_name,
+          last_name: msg.senderId?.last_name,
           message: msg.message,
         }));
         setMessages(history);
@@ -54,12 +54,12 @@ const Thread = ({ partner, copy }) => {
     if (!userID || !targetUserId) return;
     const socket = createSocketConnection();
     socket.emit("joinChat", {
-      firstName: user.first_name,
+      first_name: user.first_name,
       userID,
       targetUserId,
     });
-    socket.on("receivedMessage", ({ firstName, lastName, message }) => {
-      setMessages((prev) => [...prev, { firstName, lastName, message }]);
+    socket.on("receivedMessage", ({ first_name, last_name, message }) => {
+      setMessages((prev) => [...prev, { first_name, last_name, message }]);
     });
     return () => {
       socket.disconnect();
@@ -76,15 +76,15 @@ const Thread = ({ partner, copy }) => {
     if (newMessage.trim() === "" || !targetUserId) return;
     const socket = createSocketConnection();
     socket.emit("sendMessage", {
-      firstName: user.first_name,
-      lastName: user.last_name,
+      first_name: user.first_name,
+      last_name: user.last_name,
       userID,
       targetUserId,
       message: newMessage,
     });
     setMessages((prev) => [
       ...prev,
-      { firstName: user.first_name, lastName: user.last_name, message: newMessage },
+      { first_name: user.first_name, last_name: user.last_name, message: newMessage },
     ]);
     setNewMessage("");
   };
@@ -152,7 +152,7 @@ const Thread = ({ partner, copy }) => {
               <Bubble
                 key={i}
                 msg={{
-                  from: user?.first_name === m.firstName ? "me" : "them",
+                  from: user?.first_name === m.first_name ? "me" : "them",
                   text: m.message,
                   time: "",
                 }}
