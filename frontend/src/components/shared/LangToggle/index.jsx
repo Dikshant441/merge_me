@@ -1,16 +1,24 @@
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
+import { useDispatch } from "react-redux";
 import { useLocale } from "../../../helpers/useLocale";
-import { PATH_BY_LOCALE } from "../../../constants/copy";
+import { PATH_BY_LOCALE, LOCALE_BY_PATH } from "../../../constants/copy";
+import { setLocale } from "../../../store/ui/slice";
 
-// Two-state toggle between the supported locales. Switches the URL segment
-// (/en-in ↔ /hi-in) so useLocale() picks up the change everywhere.
 const LangToggle = () => {
   const locale = useLocale();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { pathname } = useLocation();
 
   const switchTo = (next) => {
     if (next === locale) return;
-    navigate("/" + PATH_BY_LOCALE[next]);
+    const first = pathname.split("/").filter(Boolean)[0];
+    const isLocalePrefixed = !!LOCALE_BY_PATH[first];
+    if (isLocalePrefixed) {
+      navigate("/" + PATH_BY_LOCALE[next]);
+    } else {
+      dispatch(setLocale(next));
+    }
   };
 
   const optionClass = (isActive) =>

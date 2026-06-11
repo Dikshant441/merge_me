@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import axios from "axios";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams, useLocation } from "react-router";
 import { ArrowRight, Check, Code, Shield, AlertCircle } from "lucide-react";
 import OAuthRow from "../OAuthRow";
 import { BASEURL } from "../../../../constants";
@@ -19,6 +19,15 @@ const pwScore = (pwd) => {
   return s;
 };
 
+
+const OAUTH_ERRORS = {
+  email_exists_password:
+    "This email already has a password account. Sign in with your password first.",
+  no_verified_email: "Your provider account has no verified email.",
+  oauth_state: "Sign-in expired or was tampered with. Please try again.",
+  oauth_failed: "Social sign-in failed. Please try again.",
+};
+
 const PERK_ICONS = { check: Check, code: Code, shield: Shield };
 
 const AuthForm = ({ copy, mode }) => {
@@ -27,6 +36,10 @@ const AuthForm = ({ copy, mode }) => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const [searchParams] = useSearchParams();
+  const oauthError = OAUTH_ERRORS[searchParams.get("error")];
 
   const [first_name, setFirstName] = useState("");
   const [last_name, setLastName] = useState("");
@@ -34,8 +47,9 @@ const AuthForm = ({ copy, mode }) => {
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
   const [remember, setRemember] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(oauthError ?? "");
   const [submitting, setSubmitting] = useState(false);
+  // seed the existing error state with it:
 
   const score = useMemo(() => pwScore(password), [password]);
   const scoreLabel = [t.pwd0, t.pwd1, t.pwd2, t.pwd3, t.pwd4][score];
@@ -48,20 +62,20 @@ const AuthForm = ({ copy, mode }) => {
     try {
       if (isSignUp) {
         const res = await axios.post(
-          BASEURL + "/signup",
+          BASEURL + "/auth/signup",
           { first_name, last_name, email, password },
           { withCredentials: true }
         );
-        dispatch(addUser(res.data.data));
+        dispatch(addUser(res.data.user));
       } else {
         const res = await axios.post(
-          BASEURL + "/login",
+          BASEURL + "/auth/login",
           { email, password },
           { withCredentials: true }
         );
-        dispatch(addUser(res.data));
+        dispatch(addUser(res.data.user));
       }
-      navigate("/");
+      navigate(location.state?.from ?? "/feed", { replace: true });
     } catch (err) {
       const reason = err.response?.data || err.message;
       setError((isSignUp ? "Signup failed: " : "Login failed: ") + reason);

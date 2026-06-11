@@ -1,14 +1,12 @@
-// Augment Express.Request to carry the authenticated user attached by auth middleware,
-// and the raw request body captured by the express.json `verify` hook (used by the
-// Razorpay webhook signature check).
-// Typed loosely during the JS->TS migration; tighten once models/user has a real type.
-
+// `user` is set by requireUser (new auth). `rawBody` is captured for the
+// Razorpay webhook signature check. The `any` fallback exists during the
+// transition while legacy Mongo routes still attach a full Mongoose document.
 export {};
 
 declare global {
   namespace Express {
     interface Request {
-      user?: any;
+      user?: { id: string; sid: string } | any;
       rawBody?: Buffer;
     }
   }

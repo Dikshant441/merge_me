@@ -37,13 +37,13 @@ const AppShell = () => {
     if (user) return;
     const fetchUser = async () => {
       try {
-        const res = await axios.get(BASEURL + "/profile/view", {
+        const res = await axios.get(BASEURL + "/auth/me", {
           withCredentials: true,
         });
-        dispatch(addUser(res.data));
+        dispatch(addUser(res.data.user));
       } catch (err) {
         if (err.response?.status === 401) {
-          navigate("/login");
+          navigate("/login", { state: { from: location.pathname }, replace: true });
           return;
         }
         console.error(err);

@@ -60,27 +60,27 @@ userRouter.get("/feed", userAuth, async (req: Request, res: Response) => {
 
     const page = parseInt(req.query.page as string) || 1;
     let limit = parseInt(req.query.limit as string) || 10;
-
     limit = limit > 50 ? 50 : limit;
-
     const skip = (page - 1) * limit;
 
-    const connectionRequest = await ConnectionRequestmodel.find({
-      $or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }],
-    }).select("fromUserId toUserId");
-
     const hideUserFromFeed = new Set<string>();
-    connectionRequest.forEach((r: any) => {
-      hideUserFromFeed.add(r.fromUserId.toString());
-      hideUserFromFeed.add(r.toUserId.toString());
-    });
 
-    const users = await Usermodel.find({
-      $and: [
-        { _id: { $nin: Array.from(hideUserFromFeed) } },
-        { _id: { $ne: loggedInUser._id } },
-      ],
-    })
+    if (loggedInUser._id) {
+      const connectionRequest = await ConnectionRequestmodel.find({
+        $or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }],
+      }).select("fromUserId toUserId");
+
+      connectionRequest.forEach((r: any) => {
+        hideUserFromFeed.add(r.fromUserId.toString());
+        hideUserFromFeed.add(r.toUserId.toString());
+      });
+    }
+
+    const excludeIds = Array.from(hideUserFromFeed);
+    const filter: any = { _id: { $nin: excludeIds } };
+    if (loggedInUser._id) filter._id.$ne = loggedInUser._id;
+
+    const users = await Usermodel.find(filter)
       .select(USER_SAFE_DATA)
       .skip(skip)
       .limit(limit);

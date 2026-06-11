@@ -13,14 +13,15 @@ const Showcase = ({ copy, idx, setIdx }) => {
   }, [idx, stories]);
 
   return (
-    <aside className="mm-showcase-overlay relative rounded-3xl overflow-hidden isolate min-h-[560px] bg-mm-paper shadow-[var(--mm-shadow-photo)]">
+    <aside className="mm-showcase-overlay relative rounded-3xl overflow-hidden min-h-[560px] bg-mm-paper shadow-[var(--mm-shadow-photo)]">
       <img
         src={item.photo}
         alt={item.who}
-        className="absolute inset-0 w-full h-full object-cover -z-10"
+        className="absolute inset-0 w-full h-full object-cover object-[center_30%]"
+        style={{ zIndex: 0 }}
       />
 
-      <div className="absolute top-9 right-9 flex flex-col gap-2 items-end z-[1] max-[980px]:hidden">
+      <div className="absolute top-9 right-9 flex flex-col gap-2 items-end z-[2] max-[980px]:hidden">
         {item.tags.map((t) => (
           <span
             key={t}
@@ -31,7 +32,7 @@ const Showcase = ({ copy, idx, setIdx }) => {
         ))}
       </div>
 
-      <div className="relative z-[1] h-full p-9 flex flex-col justify-between text-white min-h-[560px]">
+      <div className="relative z-[2] h-full p-9 flex flex-col justify-between text-white min-h-[560px]">
         <div>
           <span className="inline-flex items-center gap-2 h-[30px] pl-2.5 pr-3 rounded-full bg-white/15 border border-white/25 backdrop-blur font-mono font-medium text-xs text-white">
             <span className="w-[7px] h-[7px] rounded-full mm-pulse-dot" />

@@ -9,7 +9,6 @@ import {
   Crown,
   HelpCircle,
   LogOut,
-  MoreHorizontal,
 } from "lucide-react";
 import { BASEURL } from "../../../constants";
 import { removeUser } from "../../../store/user/slice";
@@ -34,7 +33,7 @@ const Sidebar = ({ open, onClose, copy }) => {
 
   const logout = async () => {
     try {
-      await axios.post(BASEURL + "/logout", {}, { withCredentials: true });
+      await axios.post(BASEURL + "/auth/logout", {}, { withCredentials: true });
       dispatch(removeUser());
       dispatch(removeFeed());
       dispatch(removeConnections());
@@ -82,19 +81,24 @@ const Sidebar = ({ open, onClose, copy }) => {
           </div>
         </div>
 
-        <NavSection label={copy.app.nav.product}>
+        <div className="flex flex-col gap-0.5">
           {product.map((it) => (
             <NavRow key={it.to} {...it} onClick={onClose} />
           ))}
-        </NavSection>
-
-        <NavSection label={copy.app.nav.personal}>
           <NavRow to="/premium" icon={Crown}      label={copy.app.nav.premium} onClick={onClose} />
           <NavRow to="/help"    icon={HelpCircle} label={copy.app.nav.help}    onClick={onClose} />
-          <NavRow as="button"   icon={LogOut}     label={copy.app.nav.logout}  onClick={logout} />
-        </NavSection>
+        </div>
 
         <div className="flex-1" />
+
+        <button
+          type="button"
+          onClick={logout}
+          className="inline-flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-[14px] font-medium border border-transparent text-mm-ink-2 hover:text-red-500 hover:bg-red-500/8 hover:border-red-500/20 transition w-full"
+        >
+          <LogOut size={18} strokeWidth={1.7} className="flex-shrink-0" />
+          <span>{copy.app.nav.logout}</span>
+        </button>
 
         {user && (
           <div className="flex items-center gap-2.5 p-2.5 bg-mm-surface border border-mm-border-2 rounded-[12px] shadow-[var(--mm-shadow-soft)]">
@@ -111,28 +115,12 @@ const Sidebar = ({ open, onClose, copy }) => {
                 @{(user.first_name || "you").toLowerCase()}
               </div>
             </div>
-            <button
-              type="button"
-              aria-label="more"
-              className="w-6 h-6 rounded-md text-mm-ink-3 hover:text-mm-ink hover:bg-mm-paper inline-flex items-center justify-center"
-            >
-              <MoreHorizontal size={14} strokeWidth={1.7} />
-            </button>
           </div>
         )}
       </aside>
     </>
   );
 };
-
-const NavSection = ({ label, children }) => (
-  <div className="flex flex-col gap-0.5">
-    <div className="font-mono font-medium text-[10.5px] text-mm-ink-4 uppercase tracking-[.08em] px-3 pb-1.5">
-      {label}
-    </div>
-    {children}
-  </div>
-);
 
 // NavRow either renders a NavLink (when given `to`) or a plain button. The
 // NavLink branch styles the row based on the route — coral icon when active.

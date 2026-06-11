@@ -7,8 +7,11 @@ import Payment from "../models/payment";
 import MermbershipPrice from "../utils/constants";
 // @ts-ignore - razorpay subpath utils ship no .d.ts
 import { validateWebhookSignature } from "razorpay/dist/utils/razorpay-utils";
+import { logger } from "../lib/logger";
 
 const paymentRouter = express.Router();
+
+const SAFE_USER_FIELDS = "first_name last_name email isPremium membershipType avatarUrl";
 
 paymentRouter.post("/payment/create", userAuth, async (req: Request, res: Response) => {
   try {
@@ -19,12 +22,7 @@ paymentRouter.post("/payment/create", userAuth, async (req: Request, res: Respon
       amount: MermbershipPrice[membershipType] * 100,
       currency: "INR",
       receipt: "receipt#1",
-      notes: {
-        first_name,
-        last_name,
-        email,
-        membershipType,
-      },
+      notes: { first_name, last_name, email, membershipType },
     });
 
     const payment = new Payment({
@@ -39,17 +37,22 @@ paymentRouter.post("/payment/create", userAuth, async (req: Request, res: Respon
 
     const savedPayment = await payment.save();
 
-    res.json({ ...savedPayment.toJSON(), key_id: process.env.RAZORPAY_KEY_ID });
+    // key_id is the Razorpay publishable key — safe to send to client.
+    res.json({
+      orderId: savedPayment.orderId,
+      amount: savedPayment.amount,
+      currency: savedPayment.currency,
+      notes: savedPayment.notes,
+      key_id: process.env.RAZORPAY_KEY_ID,
+    });
   } catch (err: any) {
-    res.status(401).send("Error" + err.message);
+    res.status(500).json({ error: "Payment creation failed" });
   }
 });
 
 paymentRouter.post("/payment/webhook", async (req: Request, res: Response): Promise<any> => {
   try {
-    console.log("Webhook Called");
     const webhookSignature = req.get("X-Razorpay-Signature");
-    console.log("Webhook Signature", webhookSignature);
 
     const isWebhookValid = validateWebhookSignature(
       req.rawBody!.toString(),
@@ -57,43 +60,32 @@ paymentRouter.post("/payment/webhook", async (req: Request, res: Response): Prom
       process.env.RAZORPAY_WEBHOOK_SECRET as string
     );
 
-    console.log("Is Webhook Valid", isWebhookValid);
-
     if (!isWebhookValid) {
-      console.log("INvalid Webhook Signature");
       return res.status(400).json({ msg: "Webhook signature is invalid" });
     }
-    console.log("Valid Webhook Signature");
 
     const paymentDetails = req.body.payload.payment.entity;
 
     const payment: any = await Payment.findOne({ orderId: paymentDetails.order_id });
     payment.status = paymentDetails.status;
     await payment.save();
-    console.log("Payment saved");
 
     const user: any = await User.findOne({ _id: payment.userId });
     user.isPremium = true;
     user.membershipType = payment.notes.membershipType;
-    console.log("User saved");
-
     await user.save();
 
+    logger.info({ orderId: paymentDetails.order_id }, "Payment webhook processed");
     return res.status(200).json({ msg: "Webhook received successfully" });
   } catch (err: any) {
-    return res.status(500).json({ msg: err.message });
+    logger.error({ err }, "Payment webhook error");
+    return res.status(500).json({ msg: "Webhook processing failed" });
   }
 });
 
 paymentRouter.get("/premium/verify", userAuth, async (req: Request, res: Response) => {
-  console.log("Api Called");
   const user = req.user.toJSON();
-  console.log(user);
-
-  if (user.isPremium) {
-    return res.json({ ...user });
-  }
-  return res.json({ ...user });
+  return res.json({ isPremium: !!user.isPremium, membershipType: user.membershipType ?? null });
 });
 
 export default paymentRouter;

@@ -119,7 +119,6 @@ const en = {
     oauthGitHub: "Continue with GitHub",
     oauthGitLab: "Continue with GitLab",
     oauthGoogle: "Continue with Google",
-    oauthHint: "recommended",
     divider: "or with email",
 
     fldFirst: "First name",
@@ -502,7 +501,6 @@ const hi = {
     oauthGitHub: "GitHub से जारी रखें",
     oauthGitLab: "GitLab से जारी रखें",
     oauthGoogle: "Google से जारी रखें",
-    oauthHint: "सुझाया गया",
     divider: "या ईमेल से",
 
     fldFirst: "पहला नाम",

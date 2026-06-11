@@ -7,18 +7,6 @@ export const GitHubIcon = (props) => (
   </svg>
 );
 
-export const GitLabIcon = (props) => (
-  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden {...props}>
-    <path fill="#E24329" d="M12 21.42 7.78 8.42H16.22L12 21.42z" />
-    <path fill="#FC6D26" d="M12 21.42 16.22 8.42H22.06L12 21.42z" />
-    <path fill="#FCA326" d="M22.06 8.42 23.34 12.36a.87.87 0 0 1-.32.97L12 21.42 22.06 8.42z" />
-    <path fill="#E24329" d="M22.06 8.42H16.22L18.73 1a.45.45 0 0 1 .85 0L22.06 8.42z" />
-    <path fill="#FC6D26" d="M12 21.42 7.78 8.42H1.94L12 21.42z" />
-    <path fill="#FCA326" d="M1.94 8.42.66 12.36a.87.87 0 0 0 .32.97L12 21.42 1.94 8.42z" />
-    <path fill="#E24329" d="M1.94 8.42H7.78L5.27 1a.45.45 0 0 0-.85 0L1.94 8.42z" />
-  </svg>
-);
-
 export const GoogleIcon = (props) => (
   <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden {...props}>
     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />

@@ -1,77 +1,137 @@
-import express, { Request, Response } from "express";
-import bcrypt from "bcrypt";
-import Usermodel from "../models/user";
-import { isignUpValidtion } from "../validators/validation";
+import express, { type Request, type Response, type NextFunction } from "express";
+import { signupSchema, loginSchema } from "../validators/authSchemas";
+import * as AuthService from "../services/auth.service";
+import { setAuthCookies, clearAuthCookies } from "../lib/tokens";
+import { requireUser } from "../middleware/requireUser";
+import { rateLimitFor } from "../middleware/rateLimit";
+import { badRequest } from "../lib/errors";
 
-const authRouter = express.Router();
+const router = express.Router();
 
-authRouter.post("/signup", async (req: Request, res: Response) => {
-  const { first_name, last_name, email, password } = req.body;
-  try {
-    isignUpValidtion(req);
-
-    const hashpassword = await bcrypt.hash(password, 10);
-
-    const user = new Usermodel({
-      first_name,
-      last_name,
-      email,
-      password: hashpassword,
-    });
-
-    const savedUser = await user.save();
-    const token = await (savedUser as any).getJWT();
-
-    res.cookie("token", token, {
-      expires: new Date(Date.now() + 8 * 3600000),
-    });
-
-    res.json({ message: "User Added successfully!", data: savedUser });
-  } catch (error: any) {
-    console.error(error);
-    res.status(400).send(error.message);
-  }
+const ctx = (req: Request) => ({
+  ip: req.ip ?? null,
+  userAgent: req.get("user-agent") ?? null,
 });
 
-authRouter.post("/login", async (req: Request, res: Response) => {
-  const { email, password } = req.body;
-  try {
-    const user = await Usermodel.findOne({ email });
-    if (!user) {
-      throw new Error(" Invalid credentials " + email);
+// ── POST /auth/signup ───────────────────────────────────────────
+router.post(
+  "/signup",
+  rateLimitFor("signup"),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const parsed = signupSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return next(
+          badRequest("VALIDATION", "Invalid input", parsed.error.flatten().fieldErrors)
+        );
+      }
+      const result = await AuthService.signup(parsed.data, ctx(req));
+      setAuthCookies(res, result.accessToken, result.refreshToken);
+      res.status(201).json({ user: result.user });
+    } catch (err) {
+      next(err);
     }
+  }
+);
 
-    const isPasswordMatch = await (user as any).validationPassword(password);
-
-    if (isPasswordMatch) {
-      const token = await (user as any).getJWT();
-
-      res.cookie("token", token, {
-        expires: new Date(Date.now() + 1 * 3600000),
-      });
-
-      res.send(user);
-    } else {
-      throw new Error("Invalid credentials");
+// ── POST /auth/login ────────────────────────────────────────────
+router.post(
+  "/login",
+  rateLimitFor("login"),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const parsed = loginSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return next(
+          badRequest("VALIDATION", "Invalid input", parsed.error.flatten().fieldErrors)
+        );
+      }
+      const result = await AuthService.login(parsed.data, ctx(req));
+      setAuthCookies(res, result.accessToken, result.refreshToken);
+      res.status(200).json({ user: result.user });
+    } catch (err) {
+      next(err);
     }
-  } catch (error: any) {
-    console.error(error);
-    res.status(400).send(error.message);
   }
-});
+);
 
-authRouter.post("/logout", async (_req: Request, res: Response) => {
+// ── GET /auth/verify-email?token=... ────────────────────────────
+router.get(
+  "/verify-email",
+  rateLimitFor("verify"),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const token = typeof req.query.token === "string" ? req.query.token : "";
+      if (!token) return next(badRequest("MISSING_TOKEN", "Missing verification token"));
+      await AuthService.confirmEmailVerification(token);
+      res.status(200).json({ message: "Email verified" });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+// ── POST /auth/refresh ──────────────────────────────────────────
+router.post(
+  "/refresh",
+  rateLimitFor("refresh"),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const raw = req.cookies?.refresh_token;
+      if (!raw) {
+        clearAuthCookies(res);
+        return next(badRequest("NO_REFRESH", "No refresh token"));
+      }
+
+      const { accessToken, refreshToken } = await AuthService.refresh(raw, ctx(req));
+      setAuthCookies(res, accessToken, refreshToken);
+      res.status(204).end();
+    } catch (err) {
+      clearAuthCookies(res); // wipe browser state on any refresh failure
+      next(err);
+    }
+  }
+);
+
+// ── GET /auth/me ────────────────────────────────────────────────
+router.get(
+  "/me",
+  requireUser,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user = await AuthService.getUserById(req.user!.id);
+      if (!user) return next(badRequest("NOT_FOUND", "User not found"));
+      res.status(200).json({ user });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+// ── POST /auth/logout (current device) ──────────────────────────
+router.post("/logout", async (req: Request, res: Response, next: NextFunction) => {
   try {
-    res
-      .cookie("token", null, {
-        expires: new Date(Date.now()),
-      })
-      .send("Logout successful");
-  } catch (error: any) {
-
-    console.error(error);
-    res.status(400).send(error.message);
+    await AuthService.logout(req.cookies?.refresh_token);
+    clearAuthCookies(res);
+    res.status(204).end();
+  } catch (err) {
+    next(err);
   }
 });
 
-export default authRouter;
+// ── POST /auth/logout-all (every device for this user) ──────────
+router.post(
+  "/logout-all",
+  requireUser,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await AuthService.logoutAll(req.user!.id);
+      clearAuthCookies(res);
+      res.status(204).end();
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+export default router;

@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { userAuth } from "../middleware/auth";
-import { validatedEditProfiledata } from "../validators/signupValidation";
+import { validatedEditProfiledata } from "../validators/authSchemas";
 
 const profileRouter = express.Router();
 
@@ -9,10 +9,22 @@ profileRouter.get(
   userAuth,
   async (req: Request, res: Response) => {
     try {
-      const user = req.user;
-      res.send(user);
+      const u = req.user;
+      res.json({
+        _id: u._id,
+        first_name: u.first_name,
+        last_name: u.last_name,
+        email: u.email,
+        photoURL: u.photoURL,
+        about: u.about,
+        skills: u.skills,
+        age: u.age,
+        gender: u.gender,
+        isPremium: u.isPremium,
+        membershipType: u.membershipType,
+      });
     } catch (err: any) {
-      res.status(401).send("Error" + err.message);
+      res.status(500).json({ error: "Failed to fetch profile" });
     }
   },
 );

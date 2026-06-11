@@ -18,10 +18,10 @@ const Login = () => {
 
   const mode = location.pathname === "/signup" ? "signup" : "signin";
 
-  // Already signed in → straight to the index (which itself gates on user).
+  // Already signed in → go back to where they came from, or /feed.
   useEffect(() => {
-    if (user) navigate("/", { replace: true });
-  }, [user, navigate]);
+    if (user) navigate(location.state?.from ?? "/feed", { replace: true });
+  }, [user, navigate, location.state]);
 
   const [showIdx, setShowIdx] = useState(0);
 
