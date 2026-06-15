@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import axios from "axios";
 import { useSelector } from "react-redux";
 import { GitMerge, MoreHorizontal, Code, Send } from "lucide-react";
-import { BASEURL } from "../../../../constants";
+import { chatApi } from "../../../../api/chat/chat.api";
 import { createSocketConnection } from "../../../../helpers/socket";
 import { getConnectionExtras, MOCK_MESSAGES } from "../data";
 
@@ -29,9 +28,7 @@ const Thread = ({ partner, copy }) => {
     let cancelled = false;
     const fetchChat = async () => {
       try {
-        const res = await axios.get(BASEURL + "/chat/" + targetUserId, {
-          withCredentials: true,
-        });
+        const res = await chatApi.getChatHistory(targetUserId);
         if (cancelled) return;
         const history = (res?.data?.messages || []).map((msg) => ({
           first_name: msg.senderId?.first_name,

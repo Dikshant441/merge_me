@@ -1,8 +1,7 @@
 import { useEffect } from "react";
-import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { useOutletContext } from "react-router";
-import { BASEURL } from "../../../constants";
+import { userApi } from "../../../api/user/user.api";
 import { addRequests, removeRequest } from "../../../store/requests/slice";
 import PageHeader from "../../shared/PageHeader";
 import RequestCard from "../../features/requests/RequestCard";
@@ -14,9 +13,7 @@ const Requests = () => {
 
   const fetchRequests = async () => {
     try {
-      const res = await axios.get(BASEURL + "/user/requests/received", {
-        withCredentials: true,
-      });
+      const res = await userApi.getReceivedRequests();
       dispatch(addRequests(res.data.data));
     } catch (err) {
       console.error(err);
@@ -25,11 +22,7 @@ const Requests = () => {
 
   const reviewRequest = async (status, _id) => {
     try {
-      await axios.post(
-        BASEURL + "/request/review/" + status + "/" + _id,
-        {},
-        { withCredentials: true }
-      );
+      await userApi.reviewRequest(status, _id);
       dispatch(removeRequest(_id));
     } catch (err) {
       console.error(err);

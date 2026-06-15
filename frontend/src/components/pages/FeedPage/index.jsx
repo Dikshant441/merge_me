@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { useOutletContext } from "react-router";
 import { X, Check, Bookmark } from "lucide-react";
-import { BASEURL } from "../../../constants";
+import { feedApi } from "../../../api/feed/feed.api";
 import { addFeed, removeFeed } from "../../../store/feed/slice";
 import PageHeader from "../../shared/PageHeader";
 import SwipeCard from "../../features/feed/SwipeCard";
@@ -24,9 +23,7 @@ const Feed = () => {
   const getFeed = async () => {
     if (feed) return;
     try {
-      const res = await axios.get(BASEURL + "/feed", {
-        withCredentials: true,
-      });
+      const res = await feedApi.getFeed();
       dispatch(addFeed(res.data));
     } catch (err) {
       console.error(err);
@@ -56,11 +53,7 @@ const Feed = () => {
     setUsed((u) => u + 1);
 
     try {
-      await axios.post(
-        BASEURL + "/request/send/" + status + "/" + current._id,
-        {},
-        { withCredentials: true }
-      );
+      await feedApi.sendRequest(status, current._id);
     } catch (err) {
       console.error(err);
     }

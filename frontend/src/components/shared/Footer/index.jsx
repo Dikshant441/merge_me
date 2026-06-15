@@ -51,11 +51,26 @@ const SocialBtn = ({ href, label, children }) => (
   </a>
 );
 
-const Footer = () => (
+const Footer = ({ mobileSectionLinks = [] }) => (
   <footer className="border-t border-mm-border bg-mm-bg font-sans">
-    <div className="max-w-[1280px] mx-auto px-8 py-12">
-      <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1.4fr] gap-10">
+    {mobileSectionLinks.length > 0 && (
+      <div className="border-b border-mm-border md:hidden">
+        <div className="max-w-[1280px] mx-auto px-5 sm:px-8 py-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+          {mobileSectionLinks.map(({ label, href }) => (
+            <a
+              key={label}
+              href={href}
+              className="text-[13px] text-mm-ink-2 hover:text-mm-ink transition no-underline"
+            >
+              {label}
+            </a>
+          ))}
+        </div>
+      </div>
+    )}
 
+    <div className="max-w-[1280px] mx-auto px-5 sm:px-8 py-10 sm:py-12">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-[1fr_1fr_1.4fr] gap-8 sm:gap-10">
         {/* Column 1 — Product */}
         <div>
           <ColHeading>Product</ColHeading>
@@ -93,7 +108,7 @@ const Footer = () => (
         </div>
 
         {/* Column 3 — Connect */}
-        <div>
+        <div className="col-span-2 sm:col-span-1">
           <ColHeading>Connect</ColHeading>
           <p className="text-[13px] text-mm-ink-2 mb-4 leading-relaxed">
             Built by devs, for devs.
@@ -115,7 +130,7 @@ const Footer = () => (
 
     {/* Bottom bar */}
     <div className="border-t border-mm-border">
-      <div className="max-w-[1280px] mx-auto px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-[12px] text-mm-ink-3 font-mono">
+      <div className="max-w-[1280px] mx-auto px-5 sm:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-[12px] text-mm-ink-3 font-mono">
         <span>© {new Date().getFullYear()} Merge Me. All rights reserved.</span>
         <span>Made with ♥ for the open-source community</span>
       </div>

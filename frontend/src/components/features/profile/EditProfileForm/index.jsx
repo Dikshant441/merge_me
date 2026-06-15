@@ -1,10 +1,8 @@
 import { useState } from "react";
 import UserCard from "../../feed/UserCard";
-import axios from "axios";
-import { BASEURL } from "../../../../constants";
 import { useDispatch } from "react-redux";
+import { profileApi } from "../../../../api/profile/profile.api";
 import { addUser } from "../../../../store/user/slice";
-import { use } from "react";
 
 const EditProfile = ({ user }) => {
   const [first_name, setFirstName] = useState(user.first_name);
@@ -22,19 +20,15 @@ const EditProfile = ({ user }) => {
     //clear the error
     setError("");
     try {
-      const res = await axios.patch(
-        BASEURL + "/profile/edit",
-        {
-          first_name: first_name,
-          last_name: last_name,
-          photoURL: photoUrl,
-          age,
-          gender,
-          about,
-          skills,
-        },
-        { withCredentials: true }
-      );
+      const res = await profileApi.editProfile({
+        first_name,
+        last_name,
+        photoURL: photoUrl,
+        age,
+        gender,
+        about,
+        skills,
+      });
       dispatch(addUser(res?.data?.data));
       setShowToast(true);
       setTimeout(() => {

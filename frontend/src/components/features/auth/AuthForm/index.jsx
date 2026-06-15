@@ -1,10 +1,9 @@
 import { useMemo, useState } from "react";
-import axios from "axios";
 import { useDispatch } from "react-redux";
 import { useNavigate, useSearchParams, useLocation } from "react-router";
 import { ArrowRight, Check, Code, Shield, AlertCircle } from "lucide-react";
 import OAuthRow from "../OAuthRow";
-import { BASEURL } from "../../../../constants";
+import { authApi } from "../../../../api/auth/auth.api";
 import { addUser } from "../../../../store/user/slice";
 
 // Cheap 0-4 password score. Each rule is one point so we get a stable label
@@ -61,18 +60,10 @@ const AuthForm = ({ copy, mode }) => {
     setSubmitting(true);
     try {
       if (isSignUp) {
-        const res = await axios.post(
-          BASEURL + "/auth/signup",
-          { first_name, last_name, email, password },
-          { withCredentials: true }
-        );
+        const res = await authApi.signup({ first_name, last_name, email, password });
         dispatch(addUser(res.data.user));
       } else {
-        const res = await axios.post(
-          BASEURL + "/auth/login",
-          { email, password },
-          { withCredentials: true }
-        );
+        const res = await authApi.login({ email, password });
         dispatch(addUser(res.data.user));
       }
       navigate(location.state?.from ?? "/feed", { replace: true });
@@ -85,13 +76,13 @@ const AuthForm = ({ copy, mode }) => {
   };
 
   return (
-    <div className="bg-mm-surface border border-mm-border rounded-3xl shadow-[var(--mm-shadow-card)] p-10 max-[980px]:p-7 min-h-[560px] flex flex-col items-center">
+    <div className="bg-transparent border-0 shadow-none rounded-none p-0 lg:bg-mm-surface lg:border lg:border-mm-border lg:rounded-3xl lg:shadow-[var(--mm-shadow-card)] lg:p-10 min-h-[560px] flex flex-col items-center">
       <div className="w-full max-w-[380px]">
         {/* Mode tabs — clicking navigates the route so a deep link to /login
             or /signup picks the right tab. */}
         <div
           role="tablist"
-          className="inline-flex bg-mm-paper border border-mm-border rounded-full p-1 gap-0.5 mb-7"
+          className="grid grid-cols-2 w-full p-1.5 mb-8 rounded-[18px] border border-mm-border bg-mm-paper/85 backdrop-blur-sm shadow-[0_10px_30px_-24px_rgba(40,24,8,0.5)]"
         >
           <button
             type="button"
@@ -99,10 +90,10 @@ const AuthForm = ({ copy, mode }) => {
             aria-selected={!isSignUp}
             onClick={() => navigate("/login")}
             className={[
-              "px-4 py-2 rounded-full text-[13px] font-medium transition",
+              "h-11 rounded-[14px] px-4 inline-flex items-center justify-center text-[13px] sm:text-[14px] font-semibold tracking-[-0.01em] transition",
               !isSignUp
-                ? "bg-mm-ink text-mm-bg shadow-[0_1px_0_rgba(255,255,255,.16)_inset,0_1px_2px_rgba(0,0,0,.18)]"
-                : "text-mm-ink-2 hover:text-mm-ink",
+                ? "bg-mm-ink text-mm-bg shadow-[0_1px_0_rgba(255,255,255,.18)_inset,0_10px_24px_-14px_rgba(20,14,4,0.6)]"
+                : "text-mm-ink-3 hover:text-mm-ink hover:bg-mm-bg/75",
             ].join(" ")}
           >
             {t.tabSignIn}
@@ -113,10 +104,10 @@ const AuthForm = ({ copy, mode }) => {
             aria-selected={isSignUp}
             onClick={() => navigate("/signup")}
             className={[
-              "px-4 py-2 rounded-full text-[13px] font-medium transition",
+              "h-11 rounded-[14px] px-4 inline-flex items-center justify-center text-[13px] sm:text-[14px] font-semibold tracking-[-0.01em] transition",
               isSignUp
-                ? "bg-mm-ink text-mm-bg shadow-[0_1px_0_rgba(255,255,255,.16)_inset,0_1px_2px_rgba(0,0,0,.18)]"
-                : "text-mm-ink-2 hover:text-mm-ink",
+                ? "bg-mm-ink text-mm-bg shadow-[0_1px_0_rgba(255,255,255,.18)_inset,0_10px_24px_-14px_rgba(20,14,4,0.6)]"
+                : "text-mm-ink-3 hover:text-mm-ink hover:bg-mm-bg/75",
             ].join(" ")}
           >
             {t.tabSignUp}

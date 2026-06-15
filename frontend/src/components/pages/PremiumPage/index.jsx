@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useOutletContext } from "react-router";
-import { BASEURL } from "../../../constants";
+import { premiumApi } from "../../../api/premium/premium.api";
 import PageHeader from "../../shared/PageHeader";
 import PlanCard from "../../features/premium/PlanCard";
 import FaqAccordion from "../../features/premium/FaqAccordion";
@@ -15,9 +14,7 @@ const Premium = () => {
 
   const verifyPremiumUser = async () => {
     try {
-      const res = await axios.get(BASEURL + "/premium/verify", {
-        withCredentials: true,
-      });
+      const res = await premiumApi.verifyPremium();
       if (res.data.isPremium) setIsPremiumUser(true);
     } catch (err) {
       console.log("Verify Response Error => ", err.response?.data?.msg);
@@ -31,11 +28,7 @@ const Premium = () => {
   const handleBuyClick = async (sku) => {
     if (!sku) return;
     try {
-      const order = await axios.post(
-        BASEURL + "/payment/create",
-        { membershipType: sku },
-        { withCredentials: true }
-      );
+      const order = await premiumApi.createPaymentOrder(sku);
       const { key_id, amount, currency, orderId, notes } = order.data;
 
       const options = {

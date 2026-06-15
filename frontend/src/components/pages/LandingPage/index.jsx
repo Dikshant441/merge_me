@@ -10,6 +10,12 @@ import { getCopy } from "../../../constants/copy";
 const Landing = () => {
   const locale = useLocale();
   const copy = getCopy(locale);
+  const mobileSectionLinks = [
+    { label: copy.navFeatures, href: "#gallery" },
+    { label: copy.navHow, href: "#how" },
+    { label: copy.navPricing, href: "#pricing" },
+    { label: copy.navDocs, href: "#docs" },
+  ];
 
   return (
     <div className="bg-mm-bg text-mm-ink font-sans antialiased min-h-full overflow-x-hidden">
@@ -19,7 +25,7 @@ const Landing = () => {
       <Gallery copy={copy} locale={locale} />
       <Features copy={copy} />
       <CtaStrip copy={copy} />
-      <Footer />
+      <Footer mobileSectionLinks={mobileSectionLinks} />
     </div>
   );
 };

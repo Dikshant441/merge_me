@@ -2,8 +2,8 @@ import { COUPLES } from "../data";
 
 const Gallery = ({ copy, locale }) => {
   return (
-    <section id="gallery" className="py-20 relative">
-      <div className="max-w-[1280px] mx-auto px-7 relative z-[1]">
+    <section id="gallery" className="pt-10 pb-20 relative">
+      <div className="max-w-[1280px] mx-auto px-5 sm:px-7 relative z-[1]">
         <div className="flex items-end justify-between gap-6 mb-11 max-[720px]:flex-col max-[720px]:items-start">
           <div>
             <span className="mm-eyebrow inline-flex items-center gap-2 font-mono font-medium text-xs uppercase tracking-[0.10em] text-mm-coral-2">
@@ -44,7 +44,7 @@ const Gallery = ({ copy, locale }) => {
                 src={p.photo}
                 alt={p.who[locale]}
                 loading="lazy"
-                className="w-full h-full object-cover object-[center_25%]"
+                className="w-full h-full object-cover object-center"
               />
               <span className="absolute top-2.5 left-2.5 font-mono font-medium text-[10px] leading-none text-white px-[7px] py-[5px] rounded-[5px] bg-white/[.16] border border-white/[.30] backdrop-blur-[8px] z-[2]">
                 commit #{String(i + 1).padStart(4, "0")}
@@ -66,7 +66,7 @@ const Gallery = ({ copy, locale }) => {
           ))}
         </div>
 
-        <div className="mt-5 flex items-center justify-between font-mono font-medium text-xs text-mm-ink-3">
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-y-2 font-mono font-medium text-xs text-mm-ink-3">
           <span>
             {copy.galleryFoot}
             <b className="text-mm-ink-2 font-medium">

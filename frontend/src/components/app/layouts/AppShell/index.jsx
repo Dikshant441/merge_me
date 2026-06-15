@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
+import { authApi } from "../../../../api/auth/auth.api";
 import Sidebar from "../../../shared/Sidebar";
 import Topbar from "../../../shared/Topbar";
-import { BASEURL } from "../../../../constants";
 import { addUser } from "../../../../store/user/slice";
 import { useLocale } from "../../../../helpers/useLocale";
 import { getCopy } from "../../../../constants/copy";
@@ -37,9 +36,7 @@ const AppShell = () => {
     if (user) return;
     const fetchUser = async () => {
       try {
-        const res = await axios.get(BASEURL + "/auth/me", {
-          withCredentials: true,
-        });
+        const res = await authApi.me();
         dispatch(addUser(res.data.user));
       } catch (err) {
         if (err.response?.status === 401) {

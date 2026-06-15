@@ -1,8 +1,7 @@
 import { useEffect } from "react";
-import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useOutletContext, useParams } from "react-router";
-import { BASEURL } from "../../../constants";
+import { userApi } from "../../../api/user/user.api";
 import { addConnections } from "../../../store/connections/slice";
 import PageHeader from "../../shared/PageHeader";
 import ThreadList from "../../features/chat/ThreadList";
@@ -21,9 +20,7 @@ const Connections = () => {
 
   const fetchConnections = async () => {
     try {
-      const res = await axios.get(BASEURL + "/user/connections", {
-        withCredentials: true,
-      });
+      const res = await userApi.getConnections();
       dispatch(addConnections(res.data?.data));
     } catch (err) {
       console.error(err);

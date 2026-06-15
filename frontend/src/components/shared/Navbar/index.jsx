@@ -1,10 +1,9 @@
-import axios from "axios";
 import React from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router";
-import { BASEURL } from "../../../constants";
 import { useNavigate } from "react-router";
 import { useDispatch } from "react-redux";
+import { authApi } from "../../../api/auth/auth.api";
 import { removeUser } from "../../../store/user/slice";
 import { removeFeed } from "../../../store/feed/slice";
 import { removeConnections } from "../../../store/connections/slice";
@@ -18,7 +17,7 @@ const Navbar = () => {
 
   const logouthandle = async () => {
     try {
-      await axios.post(BASEURL + "/auth/logout", {}, { withCredentials: true });
+      await authApi.logout();
       dispatch(removeUser());
       dispatch(removeFeed());
       dispatch(removeConnections());

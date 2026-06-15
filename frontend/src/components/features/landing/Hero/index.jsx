@@ -33,9 +33,9 @@ const Hero = ({ copy, locale }) => {
   }));
 
   return (
-    <section className="relative pt-8 pb-20 min-h-[720px]">
-      <div className="max-w-[1280px] mx-auto px-7 relative z-[1]">
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] gap-14 items-center pt-6">
+    <section className="relative pt-8 pb-10 md:pb-15">
+      <div className="max-w-[1280px] mx-auto px-5 sm:px-7 relative z-[1]`">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] gap-8 lg:gap-14 items-center pt-4 lg:pt-6">
           {/* Left column — type + CTAs */}
           <div>
             <h1 className="font-sans font-semibold tracking-[-0.035em] leading-[0.98] mt-2 mb-[22px] text-balance text-[clamp(44px,5.6vw,84px)]">
@@ -63,7 +63,7 @@ const Hero = ({ copy, locale }) => {
               </button>
             </div>
 
-            <div className="mt-12 pt-[22px] border-t border-mm-border flex items-center gap-[18px]">
+            <div className="mt-10 sm:mt-12 pt-[22px] border-t border-mm-border flex items-center gap-[18px] flex-wrap">
               <div className="inline-flex">
                 {TRUST_AVATARS.map((src, i) => (
                   <span
@@ -86,7 +86,7 @@ const Hero = ({ copy, locale }) => {
           </div>
 
           {/* Right column — photo stack stage */}
-          <div className="relative w-full aspect-[1/1.08] max-w-[600px] ml-auto">
+          <div className="relative w-full aspect-[1/1.08] max-w-[480px] sm:max-w-[600px] mx-auto lg:ml-auto lg:mr-0">
             {FLOATING_POLAROIDS.map((p, i) => (
               <div
                 key={i}

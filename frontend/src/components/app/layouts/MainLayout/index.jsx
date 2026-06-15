@@ -1,10 +1,9 @@
 import { useEffect } from "react";
-import axios from "axios";
 import { Outlet, useLocation, useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import Navbar from "../../../shared/Navbar";
 import Footer from "../../../shared/Footer";
-import { BASEURL } from "../../../../constants";
+import { profileApi } from "../../../../api/profile/profile.api";
 import { addUser } from "../../../../store/user/slice";
 import { useLocale } from "../../../../helpers/useLocale";
 
@@ -50,9 +49,7 @@ const Body = () => {
     if (user) return;
     const fetchUser = async () => {
       try {
-        const res = await axios.get(BASEURL + "/profile/view", {
-          withCredentials: true,
-        });
+        const res = await profileApi.viewProfile();
         dispatch(addUser(res.data));
       } catch (err) {
         // On public paths a 401 just means "anonymous visitor" — leave

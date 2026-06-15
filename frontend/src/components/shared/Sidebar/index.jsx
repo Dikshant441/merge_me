@@ -1,6 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
 import { NavLink, useNavigate } from "react-router";
-import axios from "axios";
 import {
   LayoutGrid,
   MessageSquare,
@@ -10,7 +9,7 @@ import {
   HelpCircle,
   LogOut,
 } from "lucide-react";
-import { BASEURL } from "../../../constants";
+import { authApi } from "../../../api/auth/auth.api";
 import { removeUser } from "../../../store/user/slice";
 import { removeFeed } from "../../../store/feed/slice";
 import { removeConnections } from "../../../store/connections/slice";
@@ -33,7 +32,7 @@ const Sidebar = ({ open, onClose, copy }) => {
 
   const logout = async () => {
     try {
-      await axios.post(BASEURL + "/auth/logout", {}, { withCredentials: true });
+      await authApi.logout();
       dispatch(removeUser());
       dispatch(removeFeed());
       dispatch(removeConnections());

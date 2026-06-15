@@ -72,7 +72,7 @@ const Viz = ({ kind, copy }) => {
 const Features = ({ copy }) => {
   return (
     <section id="how" className="pb-20 relative">
-      <div className="max-w-[1280px] mx-auto px-7 relative z-[1]">
+      <div className="max-w-[1280px] mx-auto px-5 sm:px-7 relative z-[1]">
         <div className="flex items-end justify-between gap-6 mb-11 max-[720px]:flex-col max-[720px]:items-start">
           <div>
             <span className="mm-eyebrow inline-flex items-center gap-2 font-mono font-medium text-xs uppercase tracking-[0.10em] text-mm-coral-2">
@@ -98,7 +98,7 @@ const Features = ({ copy }) => {
             <div
               key={f.num}
               className={[
-                "mm-feature flex flex-col gap-5 min-h-[380px] p-7",
+                "mm-feature flex flex-col gap-5 min-h-[300px] md:min-h-[380px] p-6 md:p-7",
                 "bg-mm-surface border border-mm-border rounded-[20px]",
                 "shadow-[var(--mm-shadow-soft)]",
                 TINTS[i],

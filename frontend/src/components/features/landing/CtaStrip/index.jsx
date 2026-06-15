@@ -6,7 +6,7 @@ const CtaStrip = ({ copy }) => {
 
   return (
     <section className="pb-20 relative">
-      <div className="max-w-[1280px] mx-auto px-7 relative z-[1]">
+      <div className="max-w-[1280px] mx-auto px-5 sm:px-7 relative z-[1]">
         <div className="relative overflow-hidden rounded-3xl isolate min-h-[360px] flex items-center mt-10">
           <div className="absolute inset-0 -z-[1] mm-cta-overlay">
             <img
@@ -16,7 +16,7 @@ const CtaStrip = ({ copy }) => {
               className="w-full h-full object-cover object-[center_35%]"
             />
           </div>
-          <div className="relative px-7 py-12 sm:px-14 max-w-[720px] text-white">
+          <div className="relative px-5 py-12 sm:px-14 max-w-[720px] text-white">
             <span className="inline-flex items-center gap-2 h-[30px] pl-2.5 pr-3 border border-white/20 bg-white/10 rounded-full font-mono font-medium text-xs text-white/85 whitespace-nowrap">
               <span className="mm-pulse-dot w-[7px] h-[7px] rounded-full" />
               {copy.ctaStripPill}

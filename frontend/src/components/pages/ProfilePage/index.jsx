@@ -1,9 +1,8 @@
 import { useState } from "react";
-import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { useOutletContext } from "react-router";
 import { Edit, Check, MapPin, Clock, GitMerge, GitBranch, Github, Linkedin } from "lucide-react";
-import { BASEURL } from "../../../constants";
+import { profileApi } from "../../../api/profile/profile.api";
 import { addUser } from "../../../store/user/slice";
 import PageHeader from "../../shared/PageHeader";
 import CompletenessRing from "../../features/profile/CompletenessRing";
@@ -80,9 +79,7 @@ const Profile = () => {
   const save = async () => {
     setError("");
     try {
-      const res = await axios.patch(BASEURL + "/profile/edit", draft, {
-        withCredentials: true,
-      });
+      const res = await profileApi.editProfile(draft);
       dispatch(addUser(res?.data?.data));
       setEditing(false);
       setDraft(null);
