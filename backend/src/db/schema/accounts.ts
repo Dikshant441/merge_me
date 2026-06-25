@@ -9,7 +9,7 @@ import { users } from "./users";
 
 // One row per (provider, providerAccountId) link. A single user can have
 // multiple rows (e.g. password + Google + GitHub). For provider='password',
-// providerAccountId is set to userId and passwordHash holds the Argon2id hash.
+// providerAccountId is set to userId and passwordHash holds the bcrypt hash.
 export const accounts = pgTable(
   "accounts",
   {

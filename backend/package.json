@@ -22,7 +22,6 @@
   "license": "ISC",
   "dependencies": {
     "arctic": "^3.7.0",
-    "argon2": "^0.44.0",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

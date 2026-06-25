@@ -17,6 +17,7 @@ const ctx = (req: Request) => ({
 router.post(
   "/signup",
   rateLimitFor("signup"),
+  
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const parsed = signupSchema.safeParse(req.body);

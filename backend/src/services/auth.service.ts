@@ -67,16 +67,23 @@ export async function issueSession(
 
 // ─── Signup ──────────────────────────────────────────────────────
 export async function signup(input: SignupInput, ctx: RequestCtx): Promise<AuthResult> {
+
   const existing = await db
     .select({ id: users.id })
     .from(users)
     .where(eq(users.email, input.email))
     .limit(1);
 
+  console.log("existing =>", existing)
+
+
   if (existing.length > 0) {
     // Generic — don't reveal which provider owns the email.
+    console.log("1111")
     throw conflict("EMAIL_TAKEN", "An account with this email already exists");
   }
+
+  console.log(22222)
 
   const passwordHash = await bcrypt.hash(input.password, BCRYPT_COST);
 
