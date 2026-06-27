@@ -17,8 +17,13 @@ export type PublicUser = {
   email: string;
   first_name: string;
   last_name: string;
-  emailVerifiedAt: Date | null;
   avatarUrl: string | null;
+  about: string | null;
+  skills: string[] | null;
+  age: number | null;
+  gender: string | null;
+  membership: string | null;
+  isPremium: boolean | null;
 };
 
 export const toPublicUser = (u: typeof users.$inferSelect): PublicUser => ({
@@ -26,8 +31,13 @@ export const toPublicUser = (u: typeof users.$inferSelect): PublicUser => ({
   email: u.email,
   first_name: u.first_name,
   last_name: u.last_name,
-  emailVerifiedAt: u.emailVerifiedAt,
   avatarUrl: u.avatarUrl,
+  about: u.about,
+  skills: u.skills,
+  age: u.age,
+  gender: u.gender,
+  membership: u.membership,
+  isPremium: u.isPremium,
 });
 
 export type RequestCtx = {
@@ -39,6 +49,13 @@ export type AuthResult = {
   user: PublicUser;
   accessToken: string;
   refreshToken: string;
+};
+
+// Returned by signup(): no session is issued until the user clicks the
+// verification link, so the route can't (and shouldn't) set auth cookies.
+export type SignupResult = {
+  user: PublicUser;
+  emailSent: true;
 };
 
 // ─── Internal: convergence point for ALL auth entry paths ────────
@@ -66,24 +83,20 @@ export async function issueSession(
 }
 
 // ─── Signup ──────────────────────────────────────────────────────
-export async function signup(input: SignupInput, ctx: RequestCtx): Promise<AuthResult> {
-
+// Password signup creates the user but does NOT log them in. We can't trust
+// the email until the user proves they own it by clicking the link. The
+// session is issued on confirmEmailVerification() instead.
+export async function signup(input: SignupInput, _ctx: RequestCtx): Promise<SignupResult> {
   const existing = await db
     .select({ id: users.id })
     .from(users)
     .where(eq(users.email, input.email))
     .limit(1);
 
-  console.log("existing =>", existing)
-
-
   if (existing.length > 0) {
     // Generic — don't reveal which provider owns the email.
-    console.log("1111")
     throw conflict("EMAIL_TAKEN", "An account with this email already exists");
   }
-
-  console.log(22222)
 
   const passwordHash = await bcrypt.hash(input.password, BCRYPT_COST);
 
@@ -123,8 +136,7 @@ export async function signup(input: SignupInput, ctx: RequestCtx): Promise<AuthR
     logger.error({ err, to: newUser.email }, "Failed to send verification email")
   );
 
-  const { accessToken, refreshToken } = await issueSession(newUser.id, ctx);
-  return { user: toPublicUser(newUser), accessToken, refreshToken };
+  return { user: toPublicUser(newUser), emailSent: true };
 }
 
 // ─── Login ───────────────────────────────────────────────────────
@@ -149,17 +161,31 @@ export async function login(input: LoginInput, ctx: RequestCtx): Promise<AuthRes
     throw unauthorized("INVALID_CREDENTIALS", "Invalid email or password");
   }
 
-  const valid = await bcrypt.compare(input.password, account.passwordHash);
+    const valid = await bcrypt.compare(input.password, account.passwordHash);
   if (!valid) {
     throw unauthorized("INVALID_CREDENTIALS", "Invalid email or password");
+  }
+
+  // Block password logins for unverified emails. (OAuth-only users have no
+  // password account row, so they never reach this branch.)
+  if (user.emailVerifiedAt === null) {
+    throw unauthorized(
+      "EMAIL_NOT_VERIFIED",
+      "Please verify your email before signing in"
+    );
   }
 
   const { accessToken, refreshToken } = await issueSession(user.id, ctx);
   return { user: toPublicUser(user), accessToken, refreshToken };
 }
 
-// ─── Email verification: confirm by token ────────────────────────
-export async function confirmEmailVerification(rawToken: string): Promise<void> {
+// ─── Email verification: confirm by token, then sign the user in ─
+// Clicking the link is itself proof of email ownership, so we drop them
+// straight into the app instead of forcing a second login round-trip.
+export async function confirmEmailVerification(
+  rawToken: string,
+  ctx: RequestCtx
+): Promise<AuthResult> {
   const hash = sha256(rawToken);
   const [row] = await db
     .select()
@@ -171,16 +197,22 @@ export async function confirmEmailVerification(rawToken: string): Promise<void> 
     throw badRequest("INVALID_TOKEN", "Verification link is invalid or expired");
   }
 
-  await db.transaction(async (tx) => {
-    await tx
+  const verifiedUser = await db.transaction(async (tx) => {
+    const [u] = await tx
       .update(users)
       .set({ emailVerifiedAt: new Date() })
-      .where(eq(users.id, row.userId));
+      .where(eq(users.id, row.userId))
+      .returning();
     await tx
       .update(emailVerifications)
       .set({ usedAt: new Date() })
       .where(eq(emailVerifications.tokenHash, hash));
+    if (!u) throw new Error("Verified user vanished mid-transaction");
+    return u;
   });
+
+  const { accessToken, refreshToken } = await issueSession(verifiedUser.id, ctx);
+  return { user: toPublicUser(verifiedUser), accessToken, refreshToken };
 }
 
 // ─── Refresh (rotation + reuse detection) ────────────────────────

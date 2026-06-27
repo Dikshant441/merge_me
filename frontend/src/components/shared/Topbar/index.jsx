@@ -1,13 +1,11 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useLocation, useNavigate } from "react-router";
-import { Search, Globe, Moon, Sun, Bell, Menu } from "lucide-react";
+import { useLocation } from "react-router";
+import { Moon, Sun, Bell, Menu } from "lucide-react";
 import { toggleTheme } from "../../../store/ui/slice";
-import { PATH_BY_LOCALE } from "../../../constants/copy";
-import { useLocale } from "../../../helpers/useLocale";
 
-// Sticky header inside the main canvas — breadcrumb on the left, search in
-// the middle, icon-buttons (lang / theme / notifications) on the right.
-// The lang button cycles EN/HI via URL, theme dispatches Redux toggle.
+// Sticky header inside the main canvas — breadcrumb on the left, icon-buttons
+// (theme / notifications) on the right.
+// The theme button dispatches a Redux toggle.
 
 const PAGE_KEY_BY_PATH = {
   "/feed":        "feed",
@@ -21,8 +19,6 @@ const PAGE_KEY_BY_PATH = {
 const Topbar = ({ copy, onOpenSidebar }) => {
   const theme = useSelector((s) => s.ui.theme);
   const dispatch = useDispatch();
-  const locale = useLocale();
-  const navigate = useNavigate();
   const location = useLocation();
 
   const isDark = theme === "dark";
@@ -32,11 +28,6 @@ const Topbar = ({ copy, onOpenSidebar }) => {
   let key = PAGE_KEY_BY_PATH[trimmed];
   if (!key && trimmed.startsWith("/chat/")) key = "connections";
   const pageLabel = key ? copy.app.nav[key] : trimmed.replace("/", "");
-
-  const switchLang = () => {
-    const next = locale === "en" ? "hi" : "en";
-    navigate("/" + PATH_BY_LOCALE[next]);
-  };
 
   return (
     <header
@@ -50,7 +41,7 @@ const Topbar = ({ copy, onOpenSidebar }) => {
         type="button"
         onClick={onOpenSidebar}
         aria-label="Menu"
-        className="lg:hidden w-9 h-9 rounded-[10px] border border-mm-border bg-mm-surface text-mm-ink-2 inline-flex items-center justify-center hover:text-mm-ink"
+        className="w-9 h-9 rounded-[10px] border border-mm-border bg-mm-surface text-mm-ink-2 inline-flex items-center justify-center hover:text-mm-ink"
       >
         <Menu size={16} strokeWidth={1.7} />
       </button>
@@ -63,19 +54,7 @@ const Topbar = ({ copy, onOpenSidebar }) => {
         <span className="text-mm-ink font-semibold tracking-[-0.01em]">{pageLabel}</span>
       </div>
 
-      <div className="ml-6 hidden md:flex items-center gap-2 h-9 px-3 bg-mm-surface border border-mm-border-2 rounded-[10px] text-mm-ink-3 text-[13px] min-w-[280px] cursor-default select-none">
-        <Search size={14} strokeWidth={1.7} />
-        <span className="flex-1 truncate">{copy.app.topbar.searchPh}</span>
-        <span className="inline-flex gap-1">
-          <span className="font-mono font-medium text-[10.5px] border border-mm-border rounded-[4px] px-1.5 py-0.5 bg-mm-paper">⌘</span>
-          <span className="font-mono font-medium text-[10.5px] border border-mm-border rounded-[4px] px-1.5 py-0.5 bg-mm-paper">K</span>
-        </span>
-      </div>
-
       <div className="ml-auto inline-flex items-center gap-2">
-        <IconBtn onClick={switchLang} ariaLabel="Language">
-          <Globe size={16} strokeWidth={1.7} />
-        </IconBtn>
         <IconBtn onClick={() => dispatch(toggleTheme())} ariaLabel="Theme">
           {isDark ? <Sun size={16} strokeWidth={1.7} /> : <Moon size={16} strokeWidth={1.7} />}
         </IconBtn>

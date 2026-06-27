@@ -8,6 +8,7 @@ import { removeUser } from "../../../store/user/slice";
 import { removeFeed } from "../../../store/feed/slice";
 import { removeConnections } from "../../../store/connections/slice";
 import { removeRequest } from "../../../store/requests/slice";
+import { broadcastLogout } from "../../../helpers/authChannel";
 import Profile from "../../pages/ProfilePage";
 
 const Navbar = () => {
@@ -22,6 +23,7 @@ const Navbar = () => {
       dispatch(removeFeed());
       dispatch(removeConnections());
       // dispatch(removeRequest());
+      broadcastLogout(); // sign out every other open tab too
       navigate("/login");
     } catch (error) {
       console.error("Logout failed:", error);

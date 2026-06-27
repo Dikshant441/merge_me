@@ -13,6 +13,7 @@ import { authApi } from "../../../api/auth/auth.api";
 import { removeUser } from "../../../store/user/slice";
 import { removeFeed } from "../../../store/feed/slice";
 import { removeConnections } from "../../../store/connections/slice";
+import { broadcastLogout } from "../../../helpers/authChannel";
 
 // Left-rail nav for the logged-in app. Sticky to the viewport at 248px wide.
 // Active route lights the icon coral; unread connections + pending requests
@@ -36,6 +37,7 @@ const Sidebar = ({ open, onClose, copy }) => {
       dispatch(removeUser());
       dispatch(removeFeed());
       dispatch(removeConnections());
+      broadcastLogout(); // sign out every other open tab too
       navigate("/login");
     } catch (err) {
       console.error("Logout failed:", err);
@@ -43,10 +45,10 @@ const Sidebar = ({ open, onClose, copy }) => {
   };
 
   const product = [
-    { to: "/feed",        icon: LayoutGrid,    label: copy.app.nav.feed,        kbd: "F" },
-    { to: "/connections", icon: MessageSquare, label: copy.app.nav.connections, kbd: "C", badge: unreadCount },
-    { to: "/requests",    icon: Inbox,         label: copy.app.nav.requests,    kbd: "R", badge: requestCount },
-    { to: "/profile",     icon: User,          label: copy.app.nav.profile,     kbd: "P" },
+    { to: "/feed",        icon: LayoutGrid,    label: copy.app.nav.feed },
+    { to: "/connections", icon: MessageSquare, label: copy.app.nav.connections, badge: unreadCount },
+    { to: "/requests",    icon: Inbox,         label: copy.app.nav.requests,    badge: requestCount },
+    { to: "/profile",     icon: User,          label: copy.app.nav.profile },
   ];
 
   return (
@@ -64,7 +66,7 @@ const Sidebar = ({ open, onClose, copy }) => {
           "px-4 py-6 flex flex-col gap-7",
           "fixed left-0 top-0 z-30 w-[248px] h-screen transition-transform",
           open ? "translate-x-0" : "-translate-x-full",
-          "lg:sticky lg:translate-x-0 lg:z-auto",
+          open ? "lg:sticky lg:translate-x-0 lg:z-auto" : "lg:hidden",
         ].join(" ")}
       >
         <div>
@@ -73,10 +75,6 @@ const Sidebar = ({ open, onClose, copy }) => {
               M
             </span>
             <span>Merge Me</span>
-          </div>
-          <div className="mt-2.5 ml-2.5 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-mm-paper border border-mm-border font-mono font-medium text-[11.5px] text-mm-ink-3 w-max">
-            <span className="mm-sync-dot w-1.5 h-1.5 rounded-full" />
-            <span>main · last sync 2m</span>
           </div>
         </div>
 
@@ -90,32 +88,47 @@ const Sidebar = ({ open, onClose, copy }) => {
 
         <div className="flex-1" />
 
-        <button
-          type="button"
-          onClick={logout}
-          className="inline-flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-[14px] font-medium border border-transparent text-mm-ink-2 hover:text-red-500 hover:bg-red-500/8 hover:border-red-500/20 transition w-full"
-        >
-          <LogOut size={18} strokeWidth={1.7} className="flex-shrink-0" />
-          <span>{copy.app.nav.logout}</span>
-        </button>
+        <div className="flex flex-col gap-2 pt-4 border-t border-mm-border">
+          <button
+            type="button"
+            onClick={logout}
+            className="inline-flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-[14px] font-medium border border-transparent text-mm-ink-2 hover:text-red-500 hover:bg-red-500/8 hover:border-red-500/20 transition w-full"
+          >
+            <LogOut size={18} strokeWidth={1.7} className="flex-shrink-0" />
+            <span>{copy.app.nav.logout}</span>
+          </button>
 
-        {user && (
-          <div className="flex items-center gap-2.5 p-2.5 bg-mm-surface border border-mm-border-2 rounded-[12px] shadow-[var(--mm-shadow-soft)]">
-            <img
-              src={user.photoURL}
-              alt={user.first_name}
-              className="w-9 h-9 rounded-full object-cover border border-mm-border"
-            />
-            <div className="leading-[1.25] min-w-0 flex-1">
-              <div className="font-semibold text-[13px] text-mm-ink truncate">
-                {user.first_name} {user.last_name}
+          {user && (
+            <button
+              type="button"
+              onClick={() => {
+                navigate("/profile");
+                onClose?.();
+              }}
+              className="flex items-center gap-2.5 p-2.5 w-full text-left bg-mm-surface border border-mm-border-2 rounded-[12px] shadow-[var(--mm-shadow-soft)] hover:border-mm-border transition"
+            >
+              {user.photoURL ? (
+                <img
+                  src={user.photoURL}
+                  alt={user.first_name}
+                  className="w-9 h-9 rounded-full object-cover border border-mm-border flex-shrink-0"
+                />
+              ) : (
+                <span className="w-9 h-9 rounded-full bg-mm-coral text-white inline-flex items-center justify-center font-semibold text-[15px] border border-mm-border flex-shrink-0 select-none">
+                  {(user.first_name || "?")[0].toUpperCase()}
+                </span>
+              )}
+              <div className="leading-[1.25] min-w-0 flex-1">
+                <div className="font-semibold text-[13px] text-mm-ink truncate">
+                  {user.first_name} {user.last_name}
+                </div>
+                <div className="font-mono font-medium text-[11.5px] text-mm-ink-3 truncate">
+                  @{(user.first_name || "you").toLowerCase()}
+                </div>
               </div>
-              <div className="font-mono font-medium text-[11.5px] text-mm-ink-3 truncate">
-                @{(user.first_name || "you").toLowerCase()}
-              </div>
-            </div>
-          </div>
-        )}
+            </button>
+          )}
+        </div>
       </aside>
     </>
   );
@@ -123,7 +136,7 @@ const Sidebar = ({ open, onClose, copy }) => {
 
 // NavRow either renders a NavLink (when given `to`) or a plain button. The
 // NavLink branch styles the row based on the route — coral icon when active.
-const NavRow = ({ to, as, icon: Icon, label, kbd, badge, onClick }) => {
+const NavRow = ({ to, as, icon: Icon, label, badge, onClick }) => {
   const itemClass = (active) =>
     [
       "inline-flex items-center gap-3 px-3 py-2.5 rounded-[10px]",
@@ -147,10 +160,6 @@ const NavRow = ({ to, as, icon: Icon, label, kbd, badge, onClick }) => {
       {badge ? (
         <span className="ml-auto min-w-[18px] h-[18px] px-1.5 rounded-full bg-mm-coral text-white font-mono font-semibold text-[11px] inline-flex items-center justify-center">
           {badge}
-        </span>
-      ) : kbd ? (
-        <span className="ml-auto font-mono font-medium text-[10.5px] text-mm-ink-4 min-w-[16px] px-1 py-0.5 bg-mm-paper border border-mm-border rounded-[4px] text-center">
-          {kbd}
         </span>
       ) : null}
     </>

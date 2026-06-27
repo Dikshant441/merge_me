@@ -24,6 +24,9 @@ export const unauthorized = (code = "UNAUTHENTICATED", message = "Authentication
 export const forbidden = (code = "FORBIDDEN", message = "Access denied") =>
   new AppError(403, code, message);
 
+export const notFound = (code = "NOT_FOUND", message = "Not found") =>
+  new AppError(404, code, message);
+
 export const conflict = (code: string, message: string) =>
   new AppError(409, code, message);
 

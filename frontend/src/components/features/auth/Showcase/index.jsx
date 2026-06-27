@@ -13,7 +13,7 @@ const Showcase = ({ copy, idx, setIdx }) => {
   }, [idx, stories]);
 
   return (
-    <aside className="mm-showcase-overlay relative rounded-3xl overflow-hidden min-h-[560px] bg-mm-paper shadow-[var(--mm-shadow-photo)]">
+    <aside className="mm-showcase-overlay relative rounded-3xl overflow-hidden h-full min-h-[560px] bg-mm-paper shadow-[var(--mm-shadow-photo)]">
       <img
         src={item.photo}
         alt={item.who}

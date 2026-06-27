@@ -22,5 +22,3 @@ export const getFeedExtras = (user) => {
     years: extras.years ?? 0,
   };
 };
-
-export const QUOTA_TOTAL = 20;

@@ -82,10 +82,9 @@ const FeedRail = ({ user, extras, used, total, copy }) => {
           </div>
           <div className="flex justify-between font-mono font-medium text-[11.5px] text-mm-ink-2">
             <span>
-              {total - used}
+              {Math.max(0, total - used)}
               {copy.app.feed.todayLeft}
             </span>
-            <span>{copy.app.feed.resets}</span>
           </div>
         </div>
       </RailCard>

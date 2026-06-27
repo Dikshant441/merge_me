@@ -51,9 +51,10 @@ type GoogleIdClaims = {
 // === 4.9 START — GET /auth/google ==================================
 router.get("/google", rateLimitFor("oauth"), (req: Request, res: Response) => {
   try {
-    const state = generateState(); // CSRF defense on the callback
-    const codeVerifier = generateCodeVerifier(); // PKCE — stops code interception
-    const nonce = generateState(); // OIDC replay defense
+    const intent = req.query.intent === "signup" ? "signup" : "login";
+    const state = generateState();
+    const codeVerifier = generateCodeVerifier();
+    const nonce = generateState();
 
     const url = getGoogle().createAuthorizationURL(state, codeVerifier, [
       "openid",
@@ -62,7 +63,7 @@ router.get("/google", rateLimitFor("oauth"), (req: Request, res: Response) => {
     ]);
     url.searchParams.set("nonce", nonce);
 
-    setOAuthStateCookie(res, { provider: "google", state, codeVerifier, nonce });
+    setOAuthStateCookie(res, { provider: "google", state, intent, codeVerifier, nonce });
     res.redirect(url.toString());
   } catch (err) {
     logger.error({ err }, "Google OAuth start failed (check GOOGLE_* env vars)");
@@ -115,12 +116,16 @@ router.get("/google/callback", async (req: Request, res: Response) => {
       avatarUrl: claims.picture ?? null,
     };
 
-    const result = await loginWithOAuth(profile, ctx(req));
+    const intent = stored.intent === "signup" ? "signup" : "login";
+    const result = await loginWithOAuth(profile, ctx(req), intent);
     setAuthCookies(res, result.accessToken, result.refreshToken);
     res.redirect(`${APP_URL}/feed`);
   } catch (err) {
     if (err instanceof AppError && err.code === "EMAIL_EXISTS_USE_PASSWORD") {
       return failRedirect(res, "email_exists_password");
+    }
+    if (err instanceof AppError && err.code === "NO_ACCOUNT") {
+      return failRedirect(res, "no_account");
     }
     logger.error({ err }, "Google OAuth callback failed");
     failRedirect(res, "oauth_failed");
@@ -132,10 +137,11 @@ router.get("/google/callback", async (req: Request, res: Response) => {
 // PKCE and GitHub is plain OAuth2 (no id_token), so state is the defense.
 router.get("/github", rateLimitFor("oauth"), (req: Request, res: Response) => {
   try {
+    const intent = req.query.intent === "signup" ? "signup" : "login";
     const state = generateState();
     const url = getGitHub().createAuthorizationURL(state, ["read:user", "user:email"]);
 
-    setOAuthStateCookie(res, { provider: "github", state });
+    setOAuthStateCookie(res, { provider: "github", state, intent });
     res.redirect(url.toString());
   } catch (err) {
     logger.error({ err }, "GitHub OAuth start failed (check GITHUB_* env vars)");
@@ -205,12 +211,16 @@ router.get("/github/callback", async (req: Request, res: Response) => {
       avatarUrl: ghUser.avatar_url,
     };
 
-    const result = await loginWithOAuth(profile, ctx(req));
+    const intent = stored.intent === "signup" ? "signup" : "login";
+    const result = await loginWithOAuth(profile, ctx(req), intent);
     setAuthCookies(res, result.accessToken, result.refreshToken);
     res.redirect(`${APP_URL}/feed`);
   } catch (err) {
     if (err instanceof AppError && err.code === "EMAIL_EXISTS_USE_PASSWORD") {
       return failRedirect(res, "email_exists_password");
+    }
+    if (err instanceof AppError && err.code === "NO_ACCOUNT") {
+      return failRedirect(res, "no_account");
     }
     logger.error({ err }, "GitHub OAuth callback failed");
     failRedirect(res, "oauth_failed");

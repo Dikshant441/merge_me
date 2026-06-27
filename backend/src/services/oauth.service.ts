@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "../db";
 import { users, accounts } from "../db/schema";
-import { conflict } from "../lib/errors";
+import { conflict, notFound } from "../lib/errors";
 import {
   issueSession,
   toPublicUser,
@@ -21,20 +21,13 @@ export type OAuthProfile = {
   avatarUrl: string | null;
 };
 
-// === 4.9/4.10 step 8 — the linking decision ========================
-// Lookup order matters:
-//   1. accounts(provider, providerAccountId) — the provider identity is the
-//      stable key. Found → SIGN IN that user, even if their provider email
-//      changed since signup.
-//   2. users(email) — exists but isn't linked to this provider identity →
-//      REFUSE (manual-link policy). Auto-linking would let anyone who
-//      controls a Google/GitHub account with your email take over your
-//      password account.
-//   3. Neither → SIGN UP: create user + account atomically. emailVerifiedAt
-//      is set immediately because the provider already verified the email.
+
+export type OAuthIntent = "login" | "signup";
+
 export async function loginWithOAuth(
   profile: OAuthProfile,
-  ctx: RequestCtx
+  ctx: RequestCtx,
+  intent: OAuthIntent
 ): Promise<AuthResult> {
   // 1. Known provider identity → sign in.
   const [linked] = await db
@@ -54,27 +47,29 @@ export async function loginWithOAuth(
     return { user: toPublicUser(linked.user), accessToken, refreshToken };
   }
 
-  // 2. Email already registered — sign in and link this provider so future
-  //    logins via it are direct. Safe: the provider already verified the email.
+  // 2. Email exists under a DIFFERENT identity (e.g. a password account) →
+  //    REFUSE. Auto-linking would let anyone who controls a Google/GitHub
+  //    account with your email silently take over your password account.
   const [existing] = await db
-    .select()
+    .select({ id: users.id })
     .from(users)
     .where(eq(users.email, profile.email))
     .limit(1);
 
   if (existing) {
-    await db.insert(accounts).values({
-      userId: existing.id,
-      provider: profile.provider,
-      providerAccountId: profile.providerAccountId,
-      passwordHash: null,
-    }).onConflictDoNothing();
-
-    const { accessToken, refreshToken } = await issueSession(existing.id, ctx);
-    return { user: toPublicUser(existing), accessToken, refreshToken };
+    throw conflict(
+      "EMAIL_EXISTS_USE_PASSWORD",
+      "This email already has an account. Sign in with your password first, then link this provider from settings."
+    );
   }
 
-  // 3. Brand-new user → atomic user + account.
+  // 3. Brand-new email. Only auto-create when the user explicitly chose to
+  //    SIGN UP. Hitting the LOGIN button with an unknown email is a mistake
+  //    (typo / wrong Google account), not a request to register.
+  if (intent === "login") {
+    throw notFound("NO_ACCOUNT", "No account found for this email. Please sign up first.");
+  }
+
   const newUser = await db.transaction(async (tx) => {
     const [u] = await tx
       .insert(users)

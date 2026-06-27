@@ -57,6 +57,7 @@ const STATE_TTL_SEC = 10 * 60;
 export type OAuthStatePayload = {
   provider: "google" | "github";
   state: string;
+  intent: "login" | "signup"; // which button the user clicked
   codeVerifier?: string; // Google only (PKCE)
   nonce?: string; // Google only (OIDC replay defense)
 };

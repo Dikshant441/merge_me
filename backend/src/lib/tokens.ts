@@ -5,10 +5,10 @@ const ACCESS_TTL_SEC = 15 * 60;                     // 15 minutes
 export const REFRESH_TTL_SEC = 30 * 24 * 60 * 60;   // 30 days
 
 const isProd = process.env.NODE_ENV === "production";
-// Refresh cookie Path must match what the BROWSER sees:
-//   dev:  /auth/refresh
-//   prod: /api/auth/refresh   (Nginx adds /api prefix)
-const REFRESH_COOKIE_PATH = process.env.COOKIE_REFRESH_PATH ?? "/auth/refresh";
+// Refresh cookie Path must match what the BROWSER requests. The SPA talks to
+// the API under /api in both environments (Vite proxy in dev, Nginx prefix in
+// prod), so the browser-visible refresh path is /api/auth/refresh.
+const REFRESH_COOKIE_PATH = process.env.COOKIE_REFRESH_PATH ?? "/api/auth/refresh";
 
 export type AccessClaims = {
   sub: string;   // user id

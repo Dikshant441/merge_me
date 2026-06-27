@@ -11,7 +11,8 @@ const OAUTH_URLS = {
   gitlab: null,
 };
 
-const OAuthRow = ({ copy }) => {
+const OAuthRow = ({ copy, mode }) => {
+  const intent = mode === "signup" ? "signup" : "login";
   const buttons = [
     {
       key: "github",
@@ -31,7 +32,7 @@ const OAuthRow = ({ copy }) => {
           onClick={(e) => {
             e.preventDefault();
             const url = OAUTH_URLS[key];
-            if (url) window.location.href = url;
+            if (url) window.location.href = `${url}?intent=${intent}`;
           }}
           className="h-11 px-4 rounded-[10px] bg-mm-surface border border-mm-border-2 text-mm-ink text-sm font-medium inline-flex items-center justify-center gap-2.5 hover:-translate-y-px hover:bg-mm-paper transition"
         >

@@ -9,6 +9,10 @@ class AuthApi extends AxiosClient {
     return this.client.post("/auth/login", data);
   }
 
+  async verifyEmail(token) {
+    return this.client.post("/auth/verify-email", { token });
+  }
+
   async me() {
     return this.client.get("/auth/me");
   }

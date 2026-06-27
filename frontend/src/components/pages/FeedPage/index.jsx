@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useOutletContext } from "react-router";
 import { X, Check, Bookmark } from "lucide-react";
@@ -7,7 +7,18 @@ import { addFeed, removeFeed } from "../../../store/feed/slice";
 import PageHeader from "../../shared/PageHeader";
 import SwipeCard from "../../features/feed/SwipeCard";
 import FeedRail from "../../features/feed/FeedRail";
-import { getFeedExtras, QUOTA_TOTAL } from "../../features/feed/data";
+import { getFeedExtras } from "../../features/feed/data";
+
+// Fisher-Yates shuffle — returns a new array so the source deck stays intact
+// for the next refill.
+const shuffle = (arr) => {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
 
 const Feed = () => {
   const dispatch = useDispatch();
@@ -16,14 +27,19 @@ const Feed = () => {
 
   // Bumped by the action bar / keyboard to fire a synthetic swipe.
   const [fireKey, setFireKey] = useState(null);
-  // Most recent swipe — used to render the commit-log strip at the bottom.
-  const [lastAction, setLastAction] = useState(null);
-  const [used, setUsed] = useState(2);
+  const [used, setUsed] = useState(0);
+  // Full set of candidates we ever loaded — used to refill the queue with a
+  // fresh shuffle once every card has been swiped, so the deck never runs dry.
+  const deckRef = useRef([]);
 
   const getFeed = async () => {
-    if (feed) return;
+    if (feed) {
+      if (deckRef.current.length === 0) deckRef.current = feed;
+      return;
+    }
     try {
       const res = await feedApi.getFeed();
+      deckRef.current = res.data;
       dispatch(addFeed(res.data));
     } catch (err) {
       console.error(err);
@@ -49,7 +65,6 @@ const Feed = () => {
     const current = feed[0];
     const status = dir === "right" ? "interested" : "ignored";
 
-    setLastAction({ dir, user: current });
     setUsed((u) => u + 1);
 
     try {
@@ -58,7 +73,12 @@ const Feed = () => {
       console.error(err);
     }
 
-    dispatch(removeFeed(current._id));
+    if (feed.length <= 1) {
+      // Last card swiped — reshuffle the full deck back in for another pass.
+      dispatch(addFeed(shuffle(deckRef.current)));
+    } else {
+      dispatch(removeFeed(current._id));
+    }
     setFireKey(null);
   };
 
@@ -66,33 +86,24 @@ const Feed = () => {
   const visible = ranOut ? [] : feed.slice(0, 3).map((u, d) => ({ user: u, depth: d }));
   const cur = ranOut ? null : feed[0];
   const extras = getFeedExtras(cur);
+  // Quota total is the real candidate pool we loaded — not a fixed number.
+  // Counts down to zero once every profile has been swiped.
+  const total = deckRef.current.length || feed?.length || 0;
 
   return (
     <>
       <PageHeader
-        eyebrow={copy.app.feed.eyebrow}
-        titleA={copy.app.feed.titleA}
         titleEm={copy.app.feed.titleEm}
-        titleB={copy.app.feed.titleB}
-        sub={copy.app.feed.sub}
       />
 
       <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-7 items-start">
-        <div className="relative bg-mm-surface border border-mm-border rounded-[20px] p-6 shadow-[var(--mm-shadow-soft)]">
+        <div className="relative border border-mm-border rounded-[20px] p-6 shadow-[var(--mm-shadow-soft)]">
           {/* head bar */}
           <div className="flex items-center justify-between mb-4 font-mono font-medium text-[12px] text-mm-ink-3">
             <span>
-              {copy.app.feed.profileCount} <b className="text-mm-ink font-semibold">1</b> /{" "}
+              {copy.app.feed.profileCount} {" "}
               {feed?.length || 0}
             </span>
-            <div className="inline-flex items-center gap-2.5">
-              <span className="inline-flex items-center gap-2 h-[26px] px-2.5 border border-mm-border bg-mm-paper rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-mm-coral shadow-[0_0_0_3px_oklch(from_var(--mm-coral)_l_c_h_/_.18)]" />
-                {copy.app.feed.rankedBy}
-              </span>
-              <span className="text-mm-ink-4">·</span>
-              <span>{copy.app.feed.refresh}</span>
-            </div>
           </div>
 
           {ranOut ? (
@@ -137,13 +148,11 @@ const Feed = () => {
                   <Check size={26} strokeWidth={1.7} />
                 </ActionBtn>
               </div>
-
-              <CommitLog action={lastAction} copy={copy} />
             </>
           )}
         </div>
 
-        <FeedRail user={cur} extras={extras} used={used} total={QUOTA_TOTAL} copy={copy} />
+        <FeedRail user={cur} extras={extras} used={used} total={total} copy={copy} />
       </div>
     </>
   );
@@ -179,28 +188,6 @@ const Kbd = ({ children }) => (
   <span className="font-mono font-medium text-[11px] text-mm-ink-4 min-w-[18px] h-[18px] px-[5px] border border-mm-border border-b-2 rounded-[5px] bg-mm-paper inline-flex items-center justify-center">
     {children}
   </span>
-);
-
-const CommitLog = ({ action, copy }) => (
-  <div className="mt-4 px-4 py-3 bg-mm-paper border border-mm-border rounded-[10px] font-mono font-medium text-[12.5px] text-mm-ink-3 flex items-center gap-2.5 overflow-hidden">
-    {action ? (
-      <>
-        <span className="text-mm-ink-2">$ git commit -m</span>
-        <span className="truncate">
-          "{action.dir === "right" ? copy.app.feed.commitOk : copy.app.feed.commitPass} · {(action.user.first_name || "").toLowerCase()}-{(action.user.last_name || "").toLowerCase()}"
-        </span>
-        <span className="ml-auto whitespace-nowrap">
-          {action.dir === "right" ? (
-            <span className="text-mm-success">{copy.app.feed.plus}</span>
-          ) : (
-            <span className="text-mm-danger">{copy.app.feed.minus}</span>
-          )}
-        </span>
-      </>
-    ) : (
-      <span>{copy.app.feed.awaiting}</span>
-    )}
-  </div>
 );
 
 export default Feed;

@@ -126,7 +126,8 @@ const en = {
     fldFirstPh: "Aanya",
     fldLast: "Last name",
     fldLastPh: "Iyer",
-    fldEmail: "Email",
+    fldEmail: "Email or username",
+    fldEmailSignUp: "Email",
     fldEmailPh: "you@company.dev",
     fldPwd: "Password",
     fldPwdPhSignIn: "your password",
@@ -134,7 +135,6 @@ const en = {
 
     show: "Show",
     hide: "Hide",
-    remember: "Remember me",
     forgot: "Forgot?",
 
     pwd0: "use 8+ chars, mixed case + number",
@@ -156,12 +156,6 @@ const en = {
     legalAnd: " and acknowledge our ",
     legalPrivacy: "Privacy Policy",
     legalEnd: ".",
-
-    perks: [
-      ["check", "Match by stack.", " Your real overlap drives the queue — not selfies."],
-      ["code", "Chat in code blocks.", " Triple-backtick a snippet and it just works."],
-      ["shield", "Verified devs only.", " GitHub-linked profiles. No bots, no recruiters."],
-    ],
 
     livePill: "live · 12 devs swiping right now",
 
@@ -214,7 +208,7 @@ const en = {
     feed: {
       eyebrow: "Your queue · ranked by stack overlap",
       titleA: "Today's ",
-      titleEm: "candidates",
+      titleEm: "Create Pull Requests",
       titleB: ".",
       sub: "5 in the queue · refreshes every 6 hours.",
       whyTitle: "Why we surfaced this profile",
@@ -232,8 +226,6 @@ const en = {
       bookmark: "Bookmark",
       passKb: "←",
       mergeKb: "→",
-      commitOk: "merged · request sent",
-      commitPass: "passed · removed from queue",
       awaiting: "$ awaiting input · ←/→/space",
       emptyTitle: "Queue is empty",
       emptySub: "Come back in 6 hours, or expand your radius in settings.",
@@ -241,9 +233,6 @@ const en = {
       refresh: "~6h refresh",
       profileCount: "profile",
       quota: "Quota",
-      resets: "resets at midnight",
-      plus: "+1 connection",
-      minus: "−1 queue",
     },
     connections: {
       eyebrow: "Active merges",
@@ -510,7 +499,8 @@ const hi = {
     fldFirstPh: "आन्या",
     fldLast: "उपनाम",
     fldLastPh: "अय्यर",
-    fldEmail: "ईमेल",
+    fldEmail: "ईमेल या उपयोगकर्ता नाम",
+    fldEmailSignUp: "ईमेल",
     fldEmailPh: "you@company.dev",
     fldPwd: "पासवर्ड",
     fldPwdPhSignIn: "आपका पासवर्ड",
@@ -518,7 +508,6 @@ const hi = {
 
     show: "दिखाएँ",
     hide: "छुपाएँ",
-    remember: "मुझे याद रखें",
     forgot: "भूल गए?",
 
     pwd0: "8+ अक्षर, बड़े-छोटे + नंबर का इस्तेमाल करें",
@@ -540,12 +529,6 @@ const hi = {
     legalAnd: " से सहमत हैं और हमारी ",
     legalPrivacy: "प्राइवेसी पॉलिसी",
     legalEnd: " स्वीकार करते हैं।",
-
-    perks: [
-      ["check", "स्टैक से मैच।", " सेल्फी नहीं — असली ओवरलैप ही क्यू तय करता है।"],
-      ["code", "कोड ब्लॉक में चैट।", " ट्रिपल-बैकटिक से स्निपेट डालो, बस हो गया।"],
-      ["shield", "केवल वेरिफ़ाइड डेव।", " GitHub-लिंक्ड प्रोफ़ाइल। बॉट या रिक्रूटर नहीं।"],
-    ],
 
     livePill: "live · अभी 12 डेव स्वाइप कर रहे हैं",
 
@@ -614,8 +597,6 @@ const hi = {
       bookmark: "बुकमार्क",
       passKb: "←",
       mergeKb: "→",
-      commitOk: "मर्ज · रिक्वेस्ट भेजी",
-      commitPass: "पास · क्यू से हटाया",
       awaiting: "$ इनपुट का इंतज़ार · ←/→/space",
       emptyTitle: "क्यू ख़ाली है",
       emptySub: "6 घंटे बाद आएँ, या सेटिंग्स में रेडियस बढ़ाएँ।",
@@ -623,9 +604,6 @@ const hi = {
       refresh: "~6h रिफ्रेश",
       profileCount: "प्रोफ़ाइल",
       quota: "कोटा",
-      resets: "आधी रात रीसेट",
-      plus: "+1 कनेक्शन",
-      minus: "−1 क्यू",
     },
     connections: {
       eyebrow: "एक्टिव मर्ज",
