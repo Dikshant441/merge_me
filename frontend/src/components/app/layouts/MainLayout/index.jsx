@@ -11,7 +11,16 @@ import { useLocale } from "../../../../helpers/useLocale";
 // shown we don't want the generic Navbar/Footer chrome on top of it, and a
 // 401 from /profile/view shouldn't bounce a logged-out visitor to /login —
 // they should just see Landing.
-const PUBLIC_PATHS = new Set(["/", "/en-in", "/hi-in", "/login", "/signup"]);
+const PUBLIC_PATHS = new Set([
+  "/",
+  "/en-in",
+  "/hi-in",
+  "/login",
+  "/signup",
+  "/verify-email",
+  "/forgot-password",
+  "/reset-password",
+]);
 
 const isPublicPath = (pathname) => {
   const trimmed = pathname.replace(/\/+$/, "") || "/";
@@ -32,9 +41,15 @@ const Body = () => {
   // the feed, which keeps the chrome.
   const trimmedPath = location.pathname.replace(/\/+$/, "") || "/";
   const isLandingRoute = ["/", "/en-in", "/hi-in"].includes(trimmedPath);
-  // /login and /signup render their own slim nav — don't stack the global
-  // chrome on top.
-  const isAuthRoute = ["/login", "/signup"].includes(trimmedPath);
+  // Auth-style public pages render their own slim nav — don't stack the
+  // global chrome on top.
+  const isAuthRoute = [
+    "/login",
+    "/signup",
+    "/verify-email",
+    "/forgot-password",
+    "/reset-password",
+  ].includes(trimmedPath);
   const showChrome = !(isLandingRoute && !user) && !isAuthRoute;
 
   // Keep the html element in sync with redux theme + URL locale. This is the

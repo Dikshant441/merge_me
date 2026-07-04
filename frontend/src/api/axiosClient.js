@@ -16,8 +16,8 @@ let refreshPromise = null;
 // A 401 from these is a real auth answer (bad password, dead/expired token),
 // not "access token expired" — so we don't try to refresh+retry them.
 const isAuthEndpoint = (url = "") =>
-  ["/auth/login", "/auth/signup", "/auth/verify-email", "/auth/refresh"].some((p) =>
-    url.includes(p)
+  ["/auth/login", "/auth/signup", "/auth/verify-email", "/auth/refresh", "/auth/password-reset"].some(
+    (p) => url.includes(p)
   );
 
 const forceLogout = () => {

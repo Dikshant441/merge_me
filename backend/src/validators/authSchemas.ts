@@ -86,6 +86,26 @@ const isignUpValidtion = (req: any) => {
   }
 };
 
+export const resetRequestSchema = z.object({ email: emailField }).strict();
+
+export const resetConfirmSchema = z
+  .object({
+    token: z.string().min(1, "Missing token").max(512),
+    // Same strength rules as signup — passwordField keeps them in one place.
+    newPassword: passwordField,
+  })
+  .strict();
+
+export const resetResendSchema = z
+  .object({
+    token: z.string().min(1, "Missing token").max(512),
+  })
+  .strict();
+
+export type ResetRequestInput = z.infer<typeof resetRequestSchema>;
+export type ResetConfirmInput = z.infer<typeof resetConfirmSchema>;
+export type ResetResendInput = z.infer<typeof resetResendSchema>;
+
 const validatedEditProfiledata = (req: any) => {
   const allowedValidateFields = [
     "first_name",

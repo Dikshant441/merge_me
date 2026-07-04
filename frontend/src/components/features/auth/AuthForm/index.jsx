@@ -231,7 +231,10 @@ const AuthForm = ({ copy, mode }) => {
               !isSignUp && (
                 <a
                   href="#"
-                  onClick={(e) => e.preventDefault()}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/forgot-password");
+                  }}
                   className="text-mm-coral-2 dark:text-mm-coral font-medium hover:underline"
                 >
                   {t.forgot}

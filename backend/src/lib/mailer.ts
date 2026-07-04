@@ -52,3 +52,36 @@ export const sendVerificationEmail = async ({ to, token }: VerifyArgs): Promise<
 
   logger.info({ to, emailId: data?.id }, "Verification email sent via Resend");
 };
+
+type ResetArgs = { to: string; token: string };
+
+export const sendPasswordResetEmail = async ({ to, token }: ResetArgs): Promise<void> => {
+  const link = `${APP_URL}/reset-password?token=${encodeURIComponent(token)}`;
+
+  // Dev: log the link instead of sending — same contract as verification.
+  if (!isProd) {
+    logger.info({ to, link }, "[mailer:dev] password-reset link (not sent)");
+    return;
+  }
+
+  const { data, error } = await getResend().emails.send({
+    from: FROM,
+    to: [to],
+    subject: "Reset your MergeMe password",
+    html: `
+      <p>We received a request to reset your MergeMe password.</p>
+      <p><a href="${link}">Set a new password</a></p>
+      <p>Or paste this link into your browser:<br/>${link}</p>
+      <p>This link expires in 15 minutes and can be used once. If you didn't
+      request this, ignore this email — your password is unchanged.</p>
+    `,
+    text: `Reset your MergeMe password: ${link}\n\nThis link expires in 15 minutes and can be used once. If you didn't request it, ignore this email.`,
+  });
+
+  if (error) {
+    logger.error({ to, err: error }, "Resend rejected the email");
+    throw new Error(`Resend: ${error.message}`);
+  }
+
+  logger.info({ to, emailId: data?.id }, "Password-reset email sent via Resend");
+};

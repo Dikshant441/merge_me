@@ -14,6 +14,8 @@ import Premium from "../../pages/PremiumPage";
 import Help from "../../pages/HelpPage";
 import LandingOrFeed from "../../pages/LandingOrFeedPage";
 import VerifyEmail from "../../pages/VerifyEmailPage";
+import ForgotPassword from "../../pages/ForgotPasswordPage";
+import ResetPassword from "../../pages/ResetPasswordPage";
 
 function App() {
   return (
@@ -31,6 +33,8 @@ function App() {
               <Route path="login" element={<LogIn />} />
               <Route path="signup" element={<LogIn />} />
               <Route path="verify-email" element={<VerifyEmail />} />
+              <Route path="forgot-password" element={<ForgotPassword />} />
+              <Route path="reset-password" element={<ResetPassword />} />
             </Route>
 
             {/* Protected — sidebar + topbar shell. Pages handle their own 401. */}

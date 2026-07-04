@@ -1,15 +1,17 @@
-import { and, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import { db } from "../db";
-import { users, accounts, sessions, emailVerifications } from "../db/schema";
+import { users, accounts, sessions, emailVerifications, passwordResets } from "../db/schema";
 import { sha256, randomToken, newUuid } from "../lib/crypto";
 import { signAccessToken, REFRESH_TTL_SEC } from "../lib/tokens";
-import { sendVerificationEmail } from "../lib/mailer";
+import { sendVerificationEmail, sendPasswordResetEmail } from "../lib/mailer";
 import { logger } from "../lib/logger";
 import { badRequest, conflict, unauthorized } from "../lib/errors";
 import type { SignupInput, LoginInput } from "../validators/authSchemas";
 
 const BCRYPT_COST = 12;
+const RESET_TTL_MIN = 15;
+const RESET_RESEND_COOLDOWN_MS = 60 * 1000;
 
 // Public-facing user shape — strip anything sensitive before returning.
 export type PublicUser = {
@@ -302,4 +304,144 @@ export async function logoutAll(userId: string): Promise<void> {
 export async function getUserById(userId: string): Promise<PublicUser | null> {
   const [u] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   return u ? toPublicUser(u) : null;
+}
+
+// ─── Password reset: request ─────────────────────────────────────
+// The route ALWAYS responds 200 no matter what happens in here — user
+// enumeration defense. A token is only minted when the email belongs to a
+// user who actually has a password account (OAuth-only users no-op).
+export async function requestPasswordReset(email: string): Promise<void> {
+  const [row] = await db
+    .select({ user: users })
+    .from(users)
+    .innerJoin(
+      accounts,
+      and(eq(accounts.userId, users.id), eq(accounts.provider, "password"))
+    )
+    .where(eq(users.email, email))
+    .limit(1);
+
+  if (!row) return; // unknown email OR OAuth-only — silently do nothing
+
+  await issuePasswordReset(row.user.id, row.user.email);
+}
+
+const issuePasswordReset = async (userId: string, email: string): Promise<void> => {
+  const [recent] = await db
+    .select({
+      createdAt: passwordResets.createdAt,
+      expiresAt: passwordResets.expiresAt,
+    })
+    .from(passwordResets)
+    .where(and(eq(passwordResets.userId, userId), isNull(passwordResets.usedAt)))
+    .orderBy(desc(passwordResets.createdAt))
+    .limit(1);
+
+  if (
+    recent &&
+    recent.expiresAt > new Date() &&
+    recent.createdAt.getTime() > Date.now() - RESET_RESEND_COOLDOWN_MS
+  ) {
+    logger.info({ userId }, "Password-reset resend skipped during cooldown");
+    return;
+  }
+
+  // One active link at a time: burn earlier unused tokens for this user.
+  await db
+    .delete(passwordResets)
+    .where(and(eq(passwordResets.userId, userId), isNull(passwordResets.usedAt)));
+
+  const raw = randomToken(32);
+  await db.insert(passwordResets).values({
+    tokenHash: sha256(raw),
+    userId,
+    expiresAt: new Date(Date.now() + RESET_TTL_MIN * 60 * 1000),
+  });
+
+  // Fire-and-forget — the 200 must not depend on (or time) the email send.
+  sendPasswordResetEmail({ to: email, token: raw }).catch((err) =>
+    logger.error({ err, to: email }, "Failed to send password-reset email")
+  );
+};
+
+export async function resendPasswordReset(rawToken: string): Promise<void> {
+  const hash = sha256(rawToken);
+  const [row] = await db
+    .select()
+    .from(passwordResets)
+    .where(eq(passwordResets.tokenHash, hash))
+    .limit(1);
+
+  if (!row || row.usedAt !== null) {
+    throw badRequest("INVALID_TOKEN", "Reset link can no longer be resent");
+  }
+
+  const [user] = await db
+    .select({ email: users.email })
+    .from(users)
+    .innerJoin(
+      accounts,
+      and(eq(accounts.userId, users.id), eq(accounts.provider, "password"))
+    )
+    .where(eq(users.id, row.userId))
+    .limit(1);
+
+  if (!user) {
+    throw badRequest("INVALID_TOKEN", "Reset link can no longer be resent");
+  }
+
+  await issuePasswordReset(row.userId, user.email);
+}
+
+// ─── Password reset: confirm ─────────────────────────────────────
+// Sets the new password, burns the token, and revokes EVERY session — the
+// whole reason someone resets is "my account may be compromised", so any
+// session an attacker holds must die. Then issues a fresh session for this
+// device: the user just proved email ownership AND set the password.
+export async function confirmPasswordReset(
+  rawToken: string,
+  newPassword: string,
+  ctx: RequestCtx
+): Promise<AuthResult> {
+  const hash = sha256(rawToken);
+  const [row] = await db
+    .select()
+    .from(passwordResets)
+    .where(eq(passwordResets.tokenHash, hash))
+    .limit(1);
+
+  if (!row || row.usedAt !== null || row.expiresAt < new Date()) {
+    throw badRequest("INVALID_TOKEN", "Reset link is invalid or expired");
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, BCRYPT_COST);
+
+  const resetUser = await db.transaction(async (tx) => {
+    const [acct] = await tx
+      .update(accounts)
+      .set({ passwordHash })
+      .where(and(eq(accounts.userId, row.userId), eq(accounts.provider, "password")))
+      .returning({ id: accounts.id });
+    // Tokens are only ever minted for password users; no row here means
+    // something is deeply wrong — abort so nothing half-applies.
+    if (!acct) throw new Error("No password account for reset token");
+
+    await tx
+      .update(passwordResets)
+      .set({ usedAt: new Date() })
+      .where(eq(passwordResets.tokenHash, hash));
+
+    // Kick out everywhere — invalidate any session an attacker may hold.
+    await tx
+      .update(sessions)
+      .set({ revokedAt: new Date() })
+      .where(and(eq(sessions.userId, row.userId), isNull(sessions.revokedAt)));
+
+    const [u] = await tx.select().from(users).where(eq(users.id, row.userId)).limit(1);
+    if (!u) throw new Error("Reset user vanished mid-transaction");
+    return u;
+  });
+
+  const { accessToken, refreshToken } = await issueSession(resetUser.id, ctx);
+  return { user: toPublicUser(resetUser), accessToken, refreshToken };
 }

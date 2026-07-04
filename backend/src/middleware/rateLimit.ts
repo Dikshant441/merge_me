@@ -5,7 +5,8 @@ const POLICIES = {
   signup:  { windowMs: 60 * 60 * 1000, limit: 10, message: "Too many signup attempts" },
   login:   { windowMs: 15 * 60 * 1000, limit: 10, message: "Too many login attempts" },
   refresh: { windowMs: 60 * 1000,      limit: 60, message: "Too many refresh attempts" },
-  reset:   { windowMs: 60 * 60 * 1000, limit: 5,  message: "Too many reset requests" },
+  reset:   { windowMs: 15 * 60 * 1000, limit: 3,  message: "Too many reset requests" },
+  resend:  { windowMs: 15 * 60 * 1000, limit: 3,  message: "Too many reset resend attempts" },
   verify:  { windowMs: 60 * 60 * 1000, limit: 10, message: "Too many verify requests" },
   oauth:   { windowMs: 60 * 1000,      limit: 20, message: "Too many OAuth attempts" },
 } as const;

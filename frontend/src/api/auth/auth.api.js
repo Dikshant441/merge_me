@@ -13,6 +13,18 @@ class AuthApi extends AxiosClient {
     return this.client.post("/auth/verify-email", { token });
   }
 
+  async requestPasswordReset(email) {
+    return this.client.post("/auth/password-reset/request", { email });
+  }
+
+  async resendPasswordReset(token) {
+    return this.client.post("/auth/password-reset/resend", { token });
+  }
+
+  async confirmPasswordReset(data) {
+    return this.client.post("/auth/password-reset/confirm", data);
+  }
+
   async me() {
     return this.client.get("/auth/me");
   }
