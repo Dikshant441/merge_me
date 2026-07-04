@@ -1,4 +1,5 @@
 import express, { type Request, type Response, type NextFunction } from "express";
+import { ipKeyGenerator } from "express-rate-limit";
 import {
   signupSchema,
   loginSchema,
@@ -21,7 +22,8 @@ const ctx = (req: Request) => ({
 
 const resetEmailRateKey = (req: Request) => {
   const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
-  return `${req.ip ?? "unknown"}:${email}`;
+  const ipKey = ipKeyGenerator(req.ip ?? req.socket.remoteAddress ?? "unknown");
+  return `${ipKey}:${email}`;
 };
 
 // ── POST /auth/signup ───────────────────────────────────────────
