@@ -124,9 +124,9 @@ const en = {
 
     fldFirst: "First name",
     fldFirstPh: "Aanya",
-    fldLast: "Last name",
+    fldLast: "Last name (optional)",
     fldLastPh: "Iyer",
-    fldEmail: "Email or username",
+    fldEmail: "Email",
     fldEmailSignUp: "Email",
     fldEmailPh: "you@company.dev",
     fldPwd: "Password",
@@ -525,7 +525,7 @@ const hi = {
 
     fldFirst: "पहला नाम",
     fldFirstPh: "आन्या",
-    fldLast: "उपनाम",
+    fldLast: "उपनाम (वैकल्पिक)",
     fldLastPh: "अय्यर",
     fldEmail: "ईमेल या उपयोगकर्ता नाम",
     fldEmailSignUp: "ईमेल",

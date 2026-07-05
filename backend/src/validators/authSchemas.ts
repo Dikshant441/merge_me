@@ -22,12 +22,19 @@ const nameField = z
   .min(2, "At least 2 characters")
   .max(100, "Too long");
 
+const optionalNameField = z
+  .string()
+  .trim()
+  .max(100, "Too long")
+  .refine((value) => value.length === 0 || value.length >= 2, "At least 2 characters")
+  .default("");
+
 export const signupSchema = z
   .object({
     email: emailField,
     password: passwordField,
     first_name: nameField,
-    last_name: nameField,
+    last_name: optionalNameField,
   })
   .strict();
 
@@ -47,8 +54,8 @@ const isignUpValidtion = (req: any) => {
 
   const allowedGenders = ["male", "female", "other"];
 
-  if (!first_name || !last_name || !email || !password) {
-    throw new Error("First name, last name, email, and password are required.");
+  if (!first_name || !email || !password) {
+    throw new Error("First name, email, and password are required.");
   } else if (!validator.isEmail(email)) {
     throw new Error("Invalid email format post.");
   } else if (

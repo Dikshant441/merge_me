@@ -109,7 +109,7 @@ export async function signup(input: SignupInput, _ctx: RequestCtx): Promise<Sign
       .values({
         email: input.email,
         first_name: input.first_name,
-        last_name: input.last_name,
+        last_name: input.last_name ?? "",
       })
       .returning();
 

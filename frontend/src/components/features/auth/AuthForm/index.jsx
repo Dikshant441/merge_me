@@ -116,20 +116,6 @@ const AuthForm = ({ copy, mode }) => {
           <button
             type="button"
             role="tab"
-            aria-selected={!isSignUp}
-            onClick={() => navigate("/login")}
-            className={[
-              "h-11 rounded-[14px] px-4 inline-flex items-center justify-center text-[13px] sm:text-[14px] font-semibold tracking-[-0.01em] transition",
-              !isSignUp
-                ? "bg-mm-ink text-mm-bg shadow-[0_1px_0_rgba(255,255,255,.18)_inset,0_10px_24px_-14px_rgba(20,14,4,0.6)]"
-                : "text-mm-ink-3",
-            ].join(" ")}
-          >
-            {t.tabSignIn}
-          </button>
-          <button
-            type="button"
-            role="tab"
             aria-selected={isSignUp}
             onClick={() => navigate("/signup")}
             className={[
@@ -140,6 +126,20 @@ const AuthForm = ({ copy, mode }) => {
             ].join(" ")}
           >
             {t.tabSignUp}
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={!isSignUp}
+            onClick={() => navigate("/login")}
+            className={[
+              "h-11 rounded-[14px] px-4 inline-flex items-center justify-center text-[13px] sm:text-[14px] font-semibold tracking-[-0.01em] transition",
+              !isSignUp
+                ? "bg-mm-ink text-mm-bg shadow-[0_1px_0_rgba(255,255,255,.18)_inset,0_10px_24px_-14px_rgba(20,14,4,0.6)]"
+                : "text-mm-ink-3",
+            ].join(" ")}
+          >
+            {t.tabSignIn}
           </button>
         </div>
 
