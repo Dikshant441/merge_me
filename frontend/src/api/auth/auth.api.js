@@ -29,6 +29,10 @@ class AuthApi extends AxiosClient {
     return this.client.get("/auth/me");
   }
 
+  async updateProfile(patch) {
+    return this.client.patch("/auth/me", patch);
+  }
+
   async logout() {
     return this.client.post("/auth/logout", {});
   }

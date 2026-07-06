@@ -1,4 +1,8 @@
-import { customType, pgTable, text, timestamp, uuid, integer, boolean } from "drizzle-orm/pg-core";
+import { customType, pgTable, text, timestamp, uuid, integer, boolean, jsonb } from "drizzle-orm/pg-core";
+
+// A social/profile link the user chose to show (GitHub, LinkedIn, …). Stored
+// as a JSONB array so the whole set travels as one column.
+export type Social = { platform: string; url: string };
 
 // Postgres CITEXT is case-insensitive text. Requires the citext extension:
 //   CREATE EXTENSION IF NOT EXISTS citext;
@@ -20,6 +24,7 @@ export const users = pgTable("users", {
   skills: text("skills").array().default([]),
   age: integer("age"),
   gender: text("gender"),
+  socials: jsonb("socials").$type<Social[]>().default([]),
   membership: text("membership").default("Free"),
   isPremium: boolean("is_premium").default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

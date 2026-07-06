@@ -7,7 +7,7 @@ import { signAccessToken, REFRESH_TTL_SEC } from "../lib/tokens";
 import { sendVerificationEmail, sendPasswordResetEmail } from "../lib/mailer";
 import { logger } from "../lib/logger";
 import { badRequest, conflict, unauthorized } from "../lib/errors";
-import type { SignupInput, LoginInput } from "../validators/authSchemas";
+import type { SignupInput, LoginInput, UpdateProfileInput } from "../validators/authSchemas";
 
 const BCRYPT_COST = 12;
 const RESET_TTL_MIN = 15;
@@ -24,6 +24,7 @@ export type PublicUser = {
   skills: string[] | null;
   age: number | null;
   gender: string | null;
+  socials: { platform: string; url: string }[] | null;
   membership: string | null;
   isPremium: boolean | null;
 };
@@ -38,6 +39,7 @@ export const toPublicUser = (u: typeof users.$inferSelect): PublicUser => ({
   skills: u.skills,
   age: u.age,
   gender: u.gender,
+  socials: u.socials,
   membership: u.membership,
   isPremium: u.isPremium,
 });
@@ -303,6 +305,31 @@ export async function logoutAll(userId: string): Promise<void> {
 // ─── Whoami helper (used by /auth/me if you add it) ──────────────
 export async function getUserById(userId: string): Promise<PublicUser | null> {
   const [u] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  return u ? toPublicUser(u) : null;
+}
+
+// ─── Update own profile ──────────────────────────────────────────
+// Partial: only the keys present in `patch` are written, so the client can
+// send just what changed. An empty avatarUrl clears it (stored as NULL).
+export async function updateProfile(
+  userId: string,
+  patch: UpdateProfileInput
+): Promise<PublicUser | null> {
+  const set: Partial<typeof users.$inferInsert> = {};
+  if (patch.first_name !== undefined) set.first_name = patch.first_name;
+  if (patch.last_name !== undefined) set.last_name = patch.last_name;
+  if (patch.avatarUrl !== undefined) set.avatarUrl = patch.avatarUrl === "" ? null : patch.avatarUrl;
+  if (patch.about !== undefined) set.about = patch.about;
+  if (patch.skills !== undefined) set.skills = patch.skills;
+  if (patch.age !== undefined) set.age = patch.age;
+  if (patch.gender !== undefined) set.gender = patch.gender;
+  if (patch.socials !== undefined) set.socials = patch.socials;
+
+  // Nothing to change — return the current record rather than issuing an
+  // empty UPDATE (which drizzle rejects).
+  if (Object.keys(set).length === 0) return getUserById(userId);
+
+  const [u] = await db.update(users).set(set).where(eq(users.id, userId)).returning();
   return u ? toPublicUser(u) : null;
 }
 

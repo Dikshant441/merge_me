@@ -1,7 +1,8 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router";
-import { Moon, Sun, Bell, Menu } from "lucide-react";
+import { Moon, Sun, Bell, Menu, ChevronLeft } from "lucide-react";
 import { toggleTheme } from "../../../store/ui/slice";
+import LangToggle from "../LangToggle";
 
 // Sticky header inside the main canvas — breadcrumb on the left, icon-buttons
 // (theme / notifications) on the right.
@@ -16,7 +17,7 @@ const PAGE_KEY_BY_PATH = {
   "/help":        "help",
 };
 
-const Topbar = ({ copy, onOpenSidebar }) => {
+const Topbar = ({ copy, onOpenSidebar, sidebarOpen }) => {
   const theme = useSelector((s) => s.ui.theme);
   const dispatch = useDispatch();
   const location = useLocation();
@@ -40,10 +41,15 @@ const Topbar = ({ copy, onOpenSidebar }) => {
       <button
         type="button"
         onClick={onOpenSidebar}
-        aria-label="Menu"
-        className="w-9 h-9 rounded-[10px] border border-mm-border bg-mm-surface text-mm-ink-2 inline-flex items-center justify-center hover:text-mm-ink"
+        aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+        title={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+        className="w-9 h-9 rounded-[9px] bg-mm-surface/70 text-mm-ink-2 inline-flex items-center justify-center hover:bg-mm-surface hover:text-mm-ink transition-colors"
       >
-        <Menu size={16} strokeWidth={1.7} />
+        {sidebarOpen ? (
+          <ChevronLeft size={16} strokeWidth={1.7} />
+        ) : (
+          <Menu size={16} strokeWidth={1.7} />
+        )}
       </button>
 
       <div className="inline-flex items-center gap-2 font-medium text-sm">
@@ -55,6 +61,7 @@ const Topbar = ({ copy, onOpenSidebar }) => {
       </div>
 
       <div className="ml-auto inline-flex items-center gap-2">
+        <LangToggle />
         <IconBtn onClick={() => dispatch(toggleTheme())} ariaLabel="Theme">
           {isDark ? <Sun size={16} strokeWidth={1.7} /> : <Moon size={16} strokeWidth={1.7} />}
         </IconBtn>

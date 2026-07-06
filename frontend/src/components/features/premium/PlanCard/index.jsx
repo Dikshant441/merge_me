@@ -48,7 +48,7 @@ const PlanCard = ({ plan, annual, copy, onBuy }) => {
               popular ? "mm-grad-text" : "",
             ].join(" ")}
           >
-            {isFree ? "$0" : "$" + price}
+            {isFree ? "₹0" : "₹" + price.toLocaleString("en-IN")}
           </span>
           <span className="font-mono font-medium text-[13px] text-mm-ink-3">
             {copy.app.premium.perMonth}
