@@ -15,11 +15,27 @@ import { MapPin } from "lucide-react";
 const FLY_OUT_MS = 380;
 const THRESHOLD = 110;
 
+// Fallback portrait for users with no photo: big mono initials over a tint
+// derived from the user's id, so every card gets its own stable hue while
+// staying inside the app's oklch palette.
+const initialsOf = (u) =>
+  (`${(u.first_name || "").charAt(0)}${(u.last_name || "").charAt(0)}`).toUpperCase() || "?";
+
+const hueOf = (u) => {
+  const s = String(u._id || u.first_name || "");
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360;
+  return h;
+};
+
 const SwipeCard = ({ user, isTop, depth, onSwipe, fireKey, copy, shared, online }) => {
   const ref = useRef(null);
   const start = useRef({ x: 0, y: 0 });
   const [drag, setDrag] = useState({ x: 0, dragging: false });
   const [outDir, setOutDir] = useState(null);
+  // Dead avatar URLs (e.g. legacy defaults) fall back to initials too.
+  const [imgFailed, setImgFailed] = useState(false);
+  const hasPhoto = Boolean(user.photoURL) && !imgFailed;
 
   const onPointerDown = (e) => {
     if (!isTop || outDir) return;
@@ -86,12 +102,31 @@ const SwipeCard = ({ user, isTop, depth, onSwipe, fireKey, copy, shared, online 
       style={{ transform, opacity, zIndex: isTop ? 5 : 5 - depth }}
     >
       <div className="relative flex-1 min-h-0 overflow-hidden mm-app-photo-fade">
-        <img
-          src={user.photoURL}
-          alt={user.first_name}
-          draggable="false"
-          className="w-full h-full object-cover"
-        />
+        {hasPhoto ? (
+          <img
+            src={user.photoURL}
+            alt={user.first_name}
+            draggable="false"
+            onError={() => setImgFailed(true)}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div
+            className="w-full h-full grid place-items-center"
+            style={{
+              background: `radial-gradient(120% 90% at 50% 20%,
+                oklch(0.90 0.05 ${hueOf(user)}) 0%,
+                oklch(0.80 0.08 ${hueOf(user)}) 100%)`,
+            }}
+          >
+            <span
+              className="font-mono font-semibold text-[96px] leading-none tracking-[-0.05em] select-none"
+              style={{ color: `oklch(0.42 0.11 ${hueOf(user)})` }}
+            >
+              {initialsOf(user)}
+            </span>
+          </div>
+        )}
 
         {online && (
           <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[.18] border border-white/[.32] text-white font-mono font-medium text-[11px] backdrop-blur-[8px] z-[2]">
