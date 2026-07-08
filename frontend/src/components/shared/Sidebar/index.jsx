@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
-import { NavLink, useNavigate } from "react-router";
+import { Link, NavLink, useNavigate } from "react-router";
 import {
   LayoutGrid,
   MessageSquare,
@@ -15,11 +15,13 @@ import { removeFeed } from "../../../store/feed/slice";
 import { removeConnections } from "../../../store/connections/slice";
 import { broadcastLogout } from "../../../helpers/authChannel";
 
-// Left-rail nav for the logged-in app. Sticky to the viewport at 248px wide.
+// Left-rail nav for the logged-in app. Part of the layout flow (a flex
+// sibling of <main>), not an overlay: it animates its width between 248px
+// (open) and 0 (closed) so the main content shrinks/expands alongside it.
 // Active route lights the icon coral; unread connections + pending requests
 // show coral count badges on their items.
 
-const Sidebar = ({ open, onClose, copy }) => {
+const Sidebar = ({ open, copy }) => {
   const user = useSelector((s) => s.user);
   const connections = useSelector((s) => s.connections);
   const requests = useSelector((s) => s.requests);
@@ -52,43 +54,46 @@ const Sidebar = ({ open, onClose, copy }) => {
   ];
 
   return (
-    <>
-      {/* mobile backdrop */}
-      {open && (
-        <div
-          className="fixed inset-0 z-20 bg-black/30 lg:hidden"
-          onClick={onClose}
-        />
-      )}
-      <aside
-        className={[
-          "border-r border-mm-border bg-mm-bg/60 backdrop-blur-md",
-          "px-4 py-6 flex flex-col gap-7",
-          "fixed left-0 top-0 z-30 w-[248px] h-screen transition-transform",
-          open ? "translate-x-0" : "-translate-x-full",
-          open ? "lg:sticky lg:translate-x-0 lg:z-auto" : "lg:hidden",
-        ].join(" ")}
-      >
+    <aside
+      aria-hidden={!open}
+      className={[
+        "shrink-0 h-screen overflow-hidden bg-mm-bg/60 backdrop-blur-md",
+        "transition-[width] duration-300 ease-in-out",
+        open ? "w-[248px] border-r border-mm-border" : "w-0",
+      ].join(" ")}
+    >
+      {/* Fixed-width inner shell so the content doesn't reflow while the
+          outer <aside> animates its width from 248px → 0 (clipped here). */}
+      <div className="w-[248px] h-full px-4 py-6 flex flex-col gap-7 overflow-y-auto">
         <div>
-          <div className="inline-flex items-center gap-2.5 font-semibold tracking-[-0.01em] text-[17px] px-2.5">
+          <Link
+            to="/feed"
+            aria-label="Merge Me — go to feed"
+            className="inline-flex items-center gap-2.5 font-semibold tracking-[-0.01em] text-[17px] px-2.5 rounded-[8px] hover:opacity-90 transition-opacity"
+          >
             <span className="w-7 h-7 rounded-[8px] bg-mm-ink text-mm-bg inline-flex items-center justify-center font-mono font-semibold text-[15px] shadow-[0_1px_0_rgba(255,255,255,.14)_inset]">
               M
             </span>
             <span>Merge Me</span>
-          </div>
+          </Link>
         </div>
 
         <div className="flex flex-col gap-0.5">
           {product.map((it) => (
-            <NavRow key={it.to} {...it} onClick={onClose} />
+            <NavRow key={it.to} {...it} />
           ))}
-          <NavRow to="/premium" icon={Crown}      label={copy.app.nav.premium} onClick={onClose} />
-          <NavRow to="/help"    icon={HelpCircle} label={copy.app.nav.help}    onClick={onClose} />
         </div>
 
         <div className="flex-1" />
 
-        <div className="flex flex-col gap-2 pt-4 border-t border-mm-border">
+        <div className="flex flex-col gap-2">
+          {/* Secondary nav — sits just above sign out */}
+          <div className="flex flex-col gap-0.5">
+            <NavRow to="/premium" icon={Crown}      label={copy.app.nav.premium} />
+            <NavRow to="/help"    icon={HelpCircle} label={copy.app.nav.help}    />
+          </div>
+
+          <div className="flex flex-col gap-2 pt-3 border-t border-mm-border">
           <button
             type="button"
             onClick={logout}
@@ -99,17 +104,15 @@ const Sidebar = ({ open, onClose, copy }) => {
           </button>
 
           {user && (
+            <div className="pt-2 mt-1 border-t border-mm-border">
             <button
               type="button"
-              onClick={() => {
-                navigate("/profile");
-                onClose?.();
-              }}
-              className="flex items-center gap-2.5 p-2.5 w-full text-left bg-mm-surface border border-mm-border-2 rounded-[12px] shadow-[var(--mm-shadow-soft)] hover:border-mm-border transition"
+              onClick={() => navigate("/profile")}
+              className="flex items-center gap-2.5 px-2 py-2 w-full text-left rounded-[10px] hover:bg-mm-paper transition"
             >
-              {user.photoURL ? (
+              {user.avatarUrl ? (
                 <img
-                  src={user.photoURL}
+                  src={user.avatarUrl}
                   alt={user.first_name}
                   className="w-9 h-9 rounded-full object-cover border border-mm-border flex-shrink-0"
                 />
@@ -127,10 +130,12 @@ const Sidebar = ({ open, onClose, copy }) => {
                 </div>
               </div>
             </button>
+            </div>
           )}
+          </div>
         </div>
-      </aside>
-    </>
+      </div>
+    </aside>
   );
 };
 

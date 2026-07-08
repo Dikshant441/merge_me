@@ -6,6 +6,7 @@ import {
   resetRequestSchema,
   resetConfirmSchema,
   resetResendSchema,
+  updateProfileSchema,
 } from "../validators/authSchemas";
 import * as AuthService from "../services/auth.service";
 import { setAuthCookies, clearAuthCookies } from "../lib/tokens";
@@ -120,6 +121,27 @@ router.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const user = await AuthService.getUserById(req.user!.id);
+      if (!user) return next(badRequest("NOT_FOUND", "User not found"));
+      res.status(200).json({ user });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+// ── PATCH /auth/me (update own profile) ─────────────────────────
+router.patch(
+  "/me",
+  requireUser,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const parsed = updateProfileSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return next(
+          badRequest("VALIDATION", "Invalid input", parsed.error.flatten().fieldErrors)
+        );
+      }
+      const user = await AuthService.updateProfile(req.user!.id, parsed.data);
       if (!user) return next(badRequest("NOT_FOUND", "User not found"));
       res.status(200).json({ user });
     } catch (err) {

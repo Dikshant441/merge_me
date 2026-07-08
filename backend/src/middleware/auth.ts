@@ -1,8 +1,31 @@
 import jwt from "jsonwebtoken";
 import type { Request, Response, NextFunction } from "express";
+import { eq } from "drizzle-orm";
 import User from "../models/user";
 import { verifyAccessToken } from "../lib/tokens";
-import { getUserById } from "../services/auth.service";
+import { getUserById, toPublicUser } from "../services/auth.service";
+import { db } from "../db";
+import { users } from "../db/schema";
+
+// Postgres identity for a user who logged in with the LEGACY Mongo JWT.
+// After the data migration every Mongo user has a Postgres row linked via
+// legacy_mongo_id; email is the fallback for rows linked before that column
+// existed. Returns null until the data migration has run.
+const findPgUserForMongoUser = async (mongoUser: any) => {
+  const [byLegacyId] = await db
+    .select()
+    .from(users)
+    .where(eq(users.legacyMongoId, String(mongoUser._id)))
+    .limit(1);
+  if (byLegacyId) return toPublicUser(byLegacyId);
+
+  const [byEmail] = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, mongoUser.email))
+    .limit(1);
+  return byEmail ? toPublicUser(byEmail) : null;
+};
 
 const userAuth = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   try {
@@ -12,6 +35,10 @@ const userAuth = async (req: Request, res: Response, next: NextFunction): Promis
       const claims = verifyAccessToken(accessToken);
       const pgUser = await getUserById(claims.sub);
       if (!pgUser) return res.status(401).send("User not authorized");
+
+      // Postgres identity — used by the migrated routes (feed, requests,
+      // connections). Mongo-backed routes keep reading req.user below.
+      req.pgUser = pgUser;
 
       // Find the matching Mongo user by email (for legacy Mongo routes)
       const mongoUser = await User.findOne({ email: pgUser.email });
@@ -42,6 +69,7 @@ const userAuth = async (req: Request, res: Response, next: NextFunction): Promis
     if (!user) throw new Error("User not found");
 
     req.user = user;
+    req.pgUser = (await findPgUserForMongoUser(user)) ?? undefined;
     next();
   } catch (error: any) {
     res.status(401).send("Error: " + error.message);

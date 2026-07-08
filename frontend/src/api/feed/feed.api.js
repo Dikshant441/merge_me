@@ -2,7 +2,8 @@ import { AxiosClient } from "../axiosClient";
 
 class FeedApi extends AxiosClient {
   async getFeed() {
-    return this.client.get("/feed");
+    // Backend defaults to 10 per page; 50 is its max — grab a full deck.
+    return this.client.get("/feed", { params: { limit: 50 } });
   }
 
   async sendRequest(status, userId) {

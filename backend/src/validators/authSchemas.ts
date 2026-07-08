@@ -48,6 +48,78 @@ export const loginSchema = z
 export type SignupInput = z.infer<typeof signupSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 
+export const resetConfirmSchema = z
+  .object({
+    token: z.string().min(1, "Missing token").max(512),
+    // Same strength rules as signup — passwordField keeps them in one place.
+    newPassword: passwordField,
+  })
+  .strict();
+
+export const resetResendSchema = z
+  .object({
+    token: z.string().min(1, "Missing token").max(512),
+  })
+  .strict();
+
+export type ResetRequestInput = z.infer<typeof resetRequestSchema>;
+export type ResetConfirmInput = z.infer<typeof resetConfirmSchema>;
+export type ResetResendInput = z.infer<typeof resetResendSchema>;
+
+export const resetRequestSchema = z.object({ email: emailField }).strict();
+
+// ── Profile update (PATCH /auth/me) ─────────────────────────────
+// Partial update against the Postgres `users` columns: every field is
+// optional, and only the keys actually sent are written (see updateProfile
+// in auth.service). We deliberately DON'T reuse optionalNameField here — its
+// `.default("")` would silently blank last_name on any patch that omits it.
+export const updateProfileSchema = z
+  .object({
+    first_name: z.string().trim().min(2, "At least 2 characters").max(100, "Too long"),
+    last_name: z
+      .string()
+      .trim()
+      .max(100, "Too long")
+      .refine((v) => v.length === 0 || v.length >= 2, "At least 2 characters"),
+    // Either an http(s) URL (e.g. an OAuth avatar) or an inline base64 image
+    // uploaded from the user's device (stored directly in the DB). The client
+    // downscales before sending, so the cap is generous but bounded.
+    avatarUrl: z
+      .string()
+      .trim()
+      .max(900_000, "Image is too large")
+      .refine(
+        (v) =>
+          v === "" ||
+          /^https?:\/\//i.test(v) ||
+          /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=\s]+$/i.test(v),
+        "Must be an image URL or an uploaded image"
+      ),
+    about: z.string().trim().max(500, "Keep it under 500 characters"),
+    skills: z.array(z.string().trim().min(1).max(40)).max(5, "At most 5 skills"),
+    age: z.number().int().min(16, "Must be 16 or older").max(120, "Invalid age").nullable(),
+    gender: z.enum(["Male", "Female", "Other"]).nullable(),
+    // Social / profile links. Platform picks the icon on the client; url must
+    // be an absolute http(s) link (the client prepends https:// if missing).
+    socials: z
+      .array(
+        z.object({
+          platform: z.enum(["github", "linkedin", "twitter", "instagram", "website"]),
+          url: z
+            .string()
+            .trim()
+            .min(1, "URL required")
+            .max(300, "URL too long")
+            .refine((v) => /^https?:\/\//i.test(v), "Must be a full http(s) URL"),
+        })
+      )
+      .max(6, "At most 6 links"),
+  })
+  .partial()
+  .strict();
+
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+
 const isignUpValidtion = (req: any) => {
   const { first_name, last_name, email, password, age, gender, skills } =
     req.body;
@@ -92,26 +164,6 @@ const isignUpValidtion = (req: any) => {
     }
   }
 };
-
-export const resetRequestSchema = z.object({ email: emailField }).strict();
-
-export const resetConfirmSchema = z
-  .object({
-    token: z.string().min(1, "Missing token").max(512),
-    // Same strength rules as signup — passwordField keeps them in one place.
-    newPassword: passwordField,
-  })
-  .strict();
-
-export const resetResendSchema = z
-  .object({
-    token: z.string().min(1, "Missing token").max(512),
-  })
-  .strict();
-
-export type ResetRequestInput = z.infer<typeof resetRequestSchema>;
-export type ResetConfirmInput = z.infer<typeof resetConfirmSchema>;
-export type ResetResendInput = z.infer<typeof resetResendSchema>;
 
 const validatedEditProfiledata = (req: any) => {
   const allowedValidateFields = [

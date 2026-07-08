@@ -30,8 +30,8 @@ export const PLANS = [
     sku: "gold",
     name: "Pro",
     blurb: "For devs who actually want to merge.",
-    priceMo: 12,
-    priceYr: 9,
+    priceMo: 999,
+    priceYr: 749,
     popular: true,
     features: [
       ["yes",     "Unlimited swipes"],
@@ -49,8 +49,8 @@ export const PLANS = [
     sku: "silver",
     name: "Team-of-2",
     blurb: "For couples who already merged.",
-    priceMo: 18,
-    priceYr: 14,
+    priceMo: 1999,
+    priceYr: 1499,
     popular: false,
     features: [
       ["yes",     "Everything in Pro"],
@@ -90,7 +90,7 @@ export const PREMIUM_FAQ = [
 // Placeholder billing history rows — replace with /billing/invoices later.
 // Format per row: [item, when, amount, status]. status: "paid" or "trial".
 export const SAMPLE_RECEIPTS = [
-  ["Pro · monthly", "sample · jul 2026", "$12.00", "paid"],
-  ["Pro · monthly", "sample · jun 2026", "$12.00", "paid"],
-  ["Pro · setup",   "sample · may 2026", "$0.00",  "trial"],
+  ["Pro · monthly", "sample · jul 2026", "₹999.00", "paid"],
+  ["Pro · monthly", "sample · jun 2026", "₹999.00", "paid"],
+  ["Pro · setup",   "sample · may 2026", "₹0.00",   "trial"],
 ];

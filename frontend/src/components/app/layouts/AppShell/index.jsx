@@ -88,13 +88,14 @@ const AppShell = () => {
   return (
     <div className="bg-mm-bg text-mm-ink font-sans antialiased h-screen overflow-hidden">
       <div className="app-bg" />
-      <div className={[
-        "relative z-[1] grid grid-cols-1 h-screen",
-        sidebarOpen ? "lg:grid-cols-[248px_minmax(0,1fr)]" : "",
-      ].join(" ")}>
-        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} copy={copy} />
-        <main className="flex flex-col min-w-0 h-screen overflow-hidden">
-          <Topbar copy={copy} onOpenSidebar={() => setSidebarOpen((o) => !o)} />
+      <div className="relative z-[1] flex h-screen">
+        <Sidebar open={sidebarOpen} copy={copy} />
+        <main className="flex flex-col min-w-0 flex-1 h-screen overflow-hidden">
+          <Topbar
+            copy={copy}
+            sidebarOpen={sidebarOpen}
+            onOpenSidebar={() => setSidebarOpen((o) => !o)}
+          />
           <div className="flex-1 overflow-y-auto p-7 max-[720px]:p-5">
             <Outlet context={{ copy, locale }} />
           </div>

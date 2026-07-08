@@ -47,7 +47,7 @@ app.use(cors({ origin: frontendOrigins, credentials: true }));
 
 app.use(
   express.json({
-    limit: "100kb",                                // memory-exhaustion defense
+    limit: "1mb",                                  // memory-exhaustion defense (allows base64 avatar uploads)
     verify: (req: Request, _res, buf) => {
       req.rawBody = buf;
     },
