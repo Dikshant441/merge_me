@@ -127,7 +127,6 @@ const Feed = () => {
                       depth={depth}
                       onSwipe={handleSwipe}
                       fireKey={depth === 0 ? fireKey : null}
-                      copy={copy}
                       shared={getFeedExtras(user).shared}
                       online={getFeedExtras(user).online}
                     />
@@ -136,16 +135,16 @@ const Feed = () => {
 
               <div className="mt-[18px] flex items-center justify-center gap-3">
                 <ActionBtn onClick={() => setFireKey({ dir: "left", n: Date.now() })} kind="pass" label={copy.app.feed.pass}>
-                  <X size={22} strokeWidth={1.7} />
+                  <X size={18} strokeWidth={1.7} />
                 </ActionBtn>
                 <Kbd>{copy.app.feed.passKb}</Kbd>
                 {/* bookmark — design has it; no backend yet, so no-op. */}
                 <ActionBtn label={copy.app.feed.bookmark}>
-                  <Bookmark size={22} strokeWidth={1.7} />
+                  <Bookmark size={18} strokeWidth={1.7} />
                 </ActionBtn>
                 <Kbd>{copy.app.feed.mergeKb}</Kbd>
                 <ActionBtn onClick={() => setFireKey({ dir: "right", n: Date.now() })} kind="merge" label={copy.app.feed.merge}>
-                  <Check size={26} strokeWidth={1.7} />
+                  <Check size={18} strokeWidth={1.7} />
                 </ActionBtn>
               </div>
             </>
@@ -165,14 +164,13 @@ const ActionBtn = ({ children, onClick, kind, label }) => {
       : kind === "merge"
       ? "hover:text-mm-success hover:border-mm-success/50"
       : "hover:text-mm-ink";
-  const size = kind === "merge" ? "w-16 h-16" : "w-[52px] h-[52px]";
   return (
     <button
       type="button"
       onClick={onClick}
       aria-label={label}
       className={[
-        size,
+        "w-11 h-11",
         "rounded-full border border-mm-border-2 bg-mm-surface text-mm-ink-2",
         "inline-flex items-center justify-center shadow-[var(--mm-shadow-soft)]",
         "transition hover:-translate-y-px",

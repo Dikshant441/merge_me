@@ -36,7 +36,6 @@ const Requests = () => {
   return (
     <>
       <PageHeader
-        eyebrow={copy.app.requests.eyebrow}
         titleA={copy.app.requests.titleA}
         titleEm={copy.app.requests.titleEm}
         titleB={copy.app.requests.titleB}

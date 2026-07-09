@@ -19,8 +19,10 @@ const Login = () => {
   const mode = location.pathname === "/signup" ? "signup" : "signin";
 
   // Already signed in → go back to where they came from, or /feed.
+  // Gate on a real identity (id / legacy _id), not object truthiness.
   useEffect(() => {
-    if (user) navigate(location.state?.from ?? "/feed", { replace: true });
+    if (user?.id || user?._id)
+      navigate(location.state?.from ?? "/feed", { replace: true });
   }, [user, navigate, location.state]);
 
   const [showIdx, setShowIdx] = useState(0);

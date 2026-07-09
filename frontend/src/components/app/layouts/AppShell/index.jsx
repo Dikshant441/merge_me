@@ -15,6 +15,10 @@ import { getCopy } from "../../../../constants/copy";
 
 const AppShell = () => {
   const user = useSelector((s) => s.user);
+  // A user is only "authed" if it's a real identity — id (Postgres auth
+  // routes) or _id (legacy /profile/view). An object with neither (e.g.
+  // rehydrated from another app's persisted state) must not pass.
+  const authed = Boolean(user?.id || user?._id);
   const theme = useSelector((s) => s.ui.theme);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -29,7 +33,7 @@ const AppShell = () => {
   // Until we've confirmed who the visitor is we render nothing but a loader —
   // otherwise the protected page flashes before the redirect kicks in. If we
   // already have a user in the store there's nothing to check.
-  const [checking, setChecking] = useState(!user);
+  const [checking, setChecking] = useState(!authed);
 
   // sync html attrs for theme + locale
   useEffect(() => {
@@ -41,7 +45,7 @@ const AppShell = () => {
   // auth gate — pull current user if we don't have one, bounce to /login if we
   // can't confirm a session (401 or any other failure).
   useEffect(() => {
-    if (user) {
+    if (authed) {
       setChecking(false);
       return;
     }
@@ -83,7 +87,7 @@ const AppShell = () => {
       </div>
     );
   }
-  if (!user) return null;
+  if (!authed) return null;
 
   return (
     <div className="bg-mm-bg text-mm-ink font-sans antialiased h-screen overflow-hidden">

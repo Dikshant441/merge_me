@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { MapPin } from "lucide-react";
+import { initialsOf, hueOf } from "../../../../helpers/avatar";
 
 // Photo card the user can drag left/right to merge/pass.
 //
 // Gesture math (same as the landing demo):
 //   - drag past ±110px → snap out to ±620px + ±18° rotation, fade to 0 over 380ms
 //   - while dragging, rotate by dragX * 0.04°
-//   - merge/pass stamps fade in with opacity = |dragX| / 120
 //
 // Behind the top card we render 2 dummies, translated +14px·depth, scaled
 // (1 − 0.04·depth), faded (1 − 0.12·depth). `fireKey` lets the action bar
@@ -15,20 +15,7 @@ import { MapPin } from "lucide-react";
 const FLY_OUT_MS = 380;
 const THRESHOLD = 110;
 
-// Fallback portrait for users with no photo: big mono initials over a tint
-// derived from the user's id, so every card gets its own stable hue while
-// staying inside the app's oklch palette.
-const initialsOf = (u) =>
-  (`${(u.first_name || "").charAt(0)}${(u.last_name || "").charAt(0)}`).toUpperCase() || "?";
-
-const hueOf = (u) => {
-  const s = String(u._id || u.first_name || "");
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360;
-  return h;
-};
-
-const SwipeCard = ({ user, isTop, depth, onSwipe, fireKey, copy, shared, online }) => {
+const SwipeCard = ({ user, isTop, depth, onSwipe, fireKey, shared, online }) => {
   const ref = useRef(null);
   const start = useRef({ x: 0, y: 0 });
   const [drag, setDrag] = useState({ x: 0, dragging: false });
@@ -75,8 +62,6 @@ const SwipeCard = ({ user, isTop, depth, onSwipe, fireKey, copy, shared, online 
   else { ty = depth * 14; scale = 1 - depth * 0.04; opacity = 1 - depth * 0.12; }
 
   const transform = `translate3d(${tx}px, ${ty}px, 0) rotate(${rot}deg) scale(${scale})`;
-  const stampMerge = isTop ? Math.max(0, drag.x / 120) : 0;
-  const stampPass = isTop ? Math.max(0, -drag.x / 120) : 0;
   const isDragging = drag.dragging && !outDir;
 
   const sharedSet = new Set(shared || []);
@@ -178,19 +163,6 @@ const SwipeCard = ({ user, isTop, depth, onSwipe, fireKey, copy, shared, online 
           {user.about}
         </div>
       )}
-
-      <span
-        className="absolute top-[22px] left-[18px] -rotate-[8deg] px-[14px] py-2 rounded-lg font-mono font-semibold text-[18px] uppercase tracking-[0.06em] pointer-events-none bg-white/[.92] backdrop-blur-[6px] text-mm-success border-2 border-mm-success z-[3]"
-        style={{ opacity: stampMerge }}
-      >
-        {copy.app.feed.merge}
-      </span>
-      <span
-        className="absolute top-[22px] right-[18px] rotate-[8deg] px-[14px] py-2 rounded-lg font-mono font-semibold text-[18px] uppercase tracking-[0.06em] pointer-events-none bg-white/[.92] backdrop-blur-[6px] text-mm-danger border-2 border-mm-danger z-[3]"
-        style={{ opacity: stampPass }}
-      >
-        {copy.app.feed.pass}
-      </span>
     </div>
   );
 };

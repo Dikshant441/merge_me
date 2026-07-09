@@ -2,6 +2,7 @@ import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import {
   persistStore,
   persistReducer,
+  createTransform,
   FLUSH,
   REHYDRATE,
   PAUSE,
@@ -24,10 +25,23 @@ const rootReducer = combineReducers({
   ui: uiReducer,
 });
 
+// Any localhost app on this origin shares localStorage, so a rehydrated user
+// may have been written by a different project with a different state shape.
+// Only accept a real identity — id (Postgres auth routes) or _id (legacy
+// /profile/view) — anything else rehydrates as null so the AppShell auth
+// gate re-fetches /auth/me instead of trusting garbage.
+const validUserOnly = createTransform(
+  null,
+  (persisted) => (persisted && (persisted.id || persisted._id) ? persisted : null),
+  { whitelist: ["user"] }
+);
+
 // Only the auth identity survives a reload. Server lists (feed/connections/
 // requests) stay memory-only so they can never show stale data on refresh.
+// key is app-specific (not "root") so other localhost projects using
+// redux-persist can never collide with ours.
 const persistedReducer = persistReducer(
-  { key: "root", storage, whitelist: ["user"] },
+  { key: "merge-me", storage, whitelist: ["user"], transforms: [validUserOnly] },
   rootReducer
 );
 

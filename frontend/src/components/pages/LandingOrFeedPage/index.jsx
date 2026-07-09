@@ -8,12 +8,16 @@ import Landing from "../LandingPage";
 const LandingOrFeed = () => {
   const user = useSelector((s) => s.user);
   const navigate = useNavigate();
+  // Gate on a real identity (id from auth routes, _id from legacy
+  // /profile/view), not object truthiness — a foreign persisted object
+  // must not count as logged in.
+  const authed = Boolean(user?.id || user?._id);
 
   useEffect(() => {
-    if (user) navigate("/feed", { replace: true });
-  }, [user, navigate]);
+    if (authed) navigate("/feed", { replace: true });
+  }, [authed, navigate]);
 
-  if (user) return null;
+  if (authed) return null;
   return <Landing />;
 };
 
