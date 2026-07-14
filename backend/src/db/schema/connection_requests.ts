@@ -12,8 +12,12 @@ import { users } from "./users";
 
 // One row = one directed edge between two users.
 // A "connection" is simply a row with status = 'accepted'.
-// State machine: (no row) → interested → accepted | rejected (review only by
-// the receiver); (no row) → ignored (terminal, silently hides from feed).
+// State machine: (no row) → interested → accepted (review only by the
+// receiver) | rejected (review DELETES the row, so the pair is fresh again
+// and both sides reappear in each other's feed); (no row) → ignored
+// (rewritable by its creator: re-ignore refreshes updated_at, or upgrade to
+// interested — ignored users requeue at the END of the creator's feed).
+// The 'rejected' enum value never persists; it is kept for wire compatibility.
 export const connectionStatus = pgEnum("connection_status", [
   "ignored",
   "interested",

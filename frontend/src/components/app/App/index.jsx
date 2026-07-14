@@ -9,7 +9,9 @@ import LogIn from "../../pages/LoginPage";
 import Feed from "../../pages/FeedPage";
 import Profile from "../../pages/ProfilePage";
 import Connections from "../../pages/ConnectionsPage";
+import Chat from "../../pages/ChatPage";
 import Requests from "../../pages/RequestsPage";
+import Saved from "../../pages/SavedPage";
 import Premium from "../../pages/PremiumPage";
 import Help from "../../pages/HelpPage";
 import LandingOrFeed from "../../pages/LandingOrFeedPage";
@@ -41,8 +43,10 @@ function App() {
             <Route element={<AppShell />}>
               <Route path="feed" element={<Feed />} />
               <Route path="connections" element={<Connections />} />
-              <Route path="chat/:userId" element={<Connections />} />
+              <Route path="chat" element={<Chat />} />
+              <Route path="chat/:userId" element={<Chat />} />
               <Route path="requests" element={<Requests />} />
+              <Route path="saved" element={<Saved />} />
               <Route path="profile" element={<Profile />} />
               <Route path="premium" element={<Premium />} />
               <Route path="help" element={<Help />} />

@@ -2,8 +2,10 @@ import { useSelector, useDispatch } from "react-redux";
 import { Link, NavLink, useNavigate } from "react-router";
 import {
   LayoutGrid,
+  GitMerge,
   MessageSquare,
   Inbox,
+  Bookmark,
   User,
   Crown,
   HelpCircle,
@@ -13,6 +15,7 @@ import { authApi } from "../../../api/auth/auth.api";
 import { removeUser } from "../../../store/user/slice";
 import { removeFeed } from "../../../store/feed/slice";
 import { removeConnections } from "../../../store/connections/slice";
+import { clearSaved } from "../../../store/saved/slice";
 import { broadcastLogout } from "../../../helpers/authChannel";
 
 // Left-rail nav for the logged-in app. Part of the layout flow (a flex
@@ -25,6 +28,7 @@ const Sidebar = ({ open, copy }) => {
   const user = useSelector((s) => s.user);
   const connections = useSelector((s) => s.connections);
   const requests = useSelector((s) => s.requests);
+  const saved = useSelector((s) => s.saved.items);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -32,6 +36,7 @@ const Sidebar = ({ open, copy }) => {
     ? connections.filter((c) => c.unread).length
     : 0;
   const requestCount = Array.isArray(requests) ? requests.length : 0;
+  const savedCount = saved.length;
 
   const logout = async () => {
     try {
@@ -39,6 +44,7 @@ const Sidebar = ({ open, copy }) => {
       dispatch(removeUser());
       dispatch(removeFeed());
       dispatch(removeConnections());
+      dispatch(clearSaved());
       broadcastLogout(); // sign out every other open tab too
       navigate("/login");
     } catch (err) {
@@ -48,8 +54,10 @@ const Sidebar = ({ open, copy }) => {
 
   const product = [
     { to: "/feed",        icon: LayoutGrid,    label: copy.app.nav.feed },
-    { to: "/connections", icon: MessageSquare, label: copy.app.nav.connections, badge: unreadCount },
+    { to: "/connections", icon: GitMerge,      label: copy.app.nav.connections },
+    { to: "/chat",        icon: MessageSquare, label: copy.app.nav.chat,        badge: unreadCount },
     { to: "/requests",    icon: Inbox,         label: copy.app.nav.requests,    badge: requestCount },
+    { to: "/saved",       icon: Bookmark,      label: copy.app.nav.saved,       badge: savedCount },
     { to: "/profile",     icon: User,          label: copy.app.nav.profile },
   ];
 
@@ -86,29 +94,26 @@ const Sidebar = ({ open, copy }) => {
 
         <div className="flex-1" />
 
-        <div className="flex flex-col gap-2">
-          {/* Secondary nav — sits just above sign out */}
-          <div className="flex flex-col gap-0.5">
-            <NavRow to="/premium" icon={Crown}      label={copy.app.nav.premium} />
-            <NavRow to="/help"    icon={HelpCircle} label={copy.app.nav.help}    />
-          </div>
+        {/* Secondary nav + sign out + profile — one evenly spaced group,
+            same gap as the rows above. */}
+        <div className="flex flex-col gap-0.5">
+          <NavRow to="/premium" icon={Crown}      label={copy.app.nav.premium} />
+          <NavRow to="/help"    icon={HelpCircle} label={copy.app.nav.help}    />
 
-          <div className="flex flex-col gap-2 pt-3 border-t border-mm-border">
           <button
             type="button"
             onClick={logout}
-            className="inline-flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-[14px] font-medium border border-transparent text-mm-ink-2 hover:text-red-500 hover:bg-red-500/8 hover:border-red-500/20 transition w-full"
+            className="inline-flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-[14px] font-medium text-mm-ink-2 hover:text-mm-ink hover:bg-mm-paper transition w-full"
           >
             <LogOut size={18} strokeWidth={1.7} className="flex-shrink-0" />
             <span>{copy.app.nav.logout}</span>
           </button>
 
           {user && (
-            <div className="pt-2 mt-1 border-t border-mm-border">
             <button
               type="button"
               onClick={() => navigate("/profile")}
-              className="flex items-center gap-2.5 px-2 py-2 w-full text-left rounded-[10px] hover:bg-mm-paper transition"
+              className="flex items-center gap-2.5 px-2 py-2 w-full text-left rounded-[10px] bg-mm-surface border border-mm-border shadow-[var(--mm-shadow-soft)] hover:bg-mm-paper transition"
             >
               {user.avatarUrl ? (
                 <img
@@ -130,9 +135,7 @@ const Sidebar = ({ open, copy }) => {
                 </div>
               </div>
             </button>
-            </div>
           )}
-          </div>
         </div>
       </div>
     </aside>

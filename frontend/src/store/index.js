@@ -15,6 +15,7 @@ import userReducer from "./user/slice";
 import feedReducer from "./feed/slice";
 import connectionReducer from "./connections/slice";
 import requestReducer from "./requests/slice";
+import savedReducer from "./saved/slice";
 import uiReducer from "./ui/slice";
 
 const rootReducer = combineReducers({
@@ -22,6 +23,7 @@ const rootReducer = combineReducers({
   feed: feedReducer,
   connections: connectionReducer,
   requests: requestReducer,
+  saved: savedReducer,
   ui: uiReducer,
 });
 

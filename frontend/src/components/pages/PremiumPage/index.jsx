@@ -60,11 +60,9 @@ const Premium = () => {
   return (
     <>
       <PageHeader
-        eyebrow={copy.app.premium.eyebrow}
         titleA={copy.app.premium.titleA}
         titleEm={copy.app.premium.titleEm}
         titleB={copy.app.premium.titleB}
-        sub={copy.app.premium.sub}
       />
 
       {isPremiumUser && (

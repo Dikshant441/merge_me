@@ -1,22 +1,20 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useOutletContext, useParams } from "react-router";
+import { useNavigate, useOutletContext } from "react-router";
 import { userApi } from "../../../api/user/user.api";
 import { addConnections } from "../../../store/connections/slice";
 import PageHeader from "../../shared/PageHeader";
-import ThreadList from "../../features/chat/ThreadList";
-import Thread from "../../features/chat/Thread";
+import ConnectionCard from "../../features/connections/ConnectionCard";
 
-// Two-pane Connections page — thread list on the left, active thread on the
-// right. The `:userId` URL param drives which thread is selected; clicking a
-// row pushes /chat/:userId so the URL is shareable.
+// Connections — the people you've merged with, as feed-style cards. Chat
+// lives on its own /chat page now; each card's message action opens its
+// thread at /chat/:userId.
 
 const Connections = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const connections = useSelector((s) => s.connections);
   const { copy } = useOutletContext();
-  const { userId } = useParams();
 
   const fetchConnections = async () => {
     try {
@@ -32,10 +30,6 @@ const Connections = () => {
   }, []);
 
   const list = connections || [];
-  const selectedId = userId || list[0]?._id || null;
-  const partner = list.find((c) => c._id === selectedId) || null;
-
-  const onSelect = (id) => navigate("/chat/" + id);
 
   return (
     <>
@@ -47,14 +41,24 @@ const Connections = () => {
         sub={copy.app.connections.sub}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-[340px_minmax(0,1fr)] gap-5 h-[calc(100vh-64px-56px-56px)] min-h-[560px]">
-        <ThreadList
-          connections={list}
-          selectedId={selectedId}
-          onSelect={onSelect}
-          copy={copy}
-        />
-        <Thread partner={partner} copy={copy} />
+      <div className="grid gap-5 grid-cols-[repeat(auto-fill,minmax(270px,1fr))] max-w-[1180px]">
+        {list.length === 0 ? (
+          <div className="col-span-full py-20 text-center text-mm-ink-3">
+            <h3 className="m-0 font-semibold text-[22px] tracking-[-0.02em] text-mm-ink">
+              {copy.app.connections.emptyTitle}
+            </h3>
+            <p className="mt-2 m-0">{copy.app.connections.emptySub}</p>
+          </div>
+        ) : (
+          list.map((c) => (
+            <ConnectionCard
+              key={c._id}
+              user={c}
+              copy={copy}
+              onMessage={(id) => navigate("/chat/" + id)}
+            />
+          ))
+        )}
       </div>
     </>
   );

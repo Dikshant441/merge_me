@@ -6,8 +6,7 @@ import cors from "cors";
 import helmet from "helmet";
 import pinoHttp from "pino-http";
 
-import connectDB from "./config/db";              // Mongo — removed in Phase 9
-import { userAuth } from "./middleware/auth";     // Legacy — still used by Mongo routes
+import { userAuth } from "./middleware/auth";
 import { errorHandler } from "./middleware/errorHandler";
 import { logger } from "./lib/logger";
 
@@ -15,6 +14,7 @@ import authRouter from "./routes/authRoutes";     // NEW (Drizzle + Postgres)
 import profileRouter from "./routes/profileRoutes";
 import requestRouter from "./routes/requestRoutes";
 import userRouter from "./routes/userRoutes";
+import savedRouter from "./routes/savedRoutes";
 import paymentRouter from "./routes/paymentRoutes";
 import chatRouter from "./routes/chatRoutes";
 import initChatServer from "./sockets";
@@ -58,11 +58,13 @@ app.use(cookieParser());
 // ─── New auth (Drizzle + Postgres) ──────────────────────────────
 app.use("/auth", authRouter);
 app.use("/auth", oauthRouter); 
-// ─── Legacy Mongo routes (removed in Phase 9) ───────────────────
+// ─── App routes (all Drizzle + Postgres) ────────────────────────
 app.use("/", paymentRouter);
 app.use("/", userAuth, profileRouter);
 app.use("/", userAuth, requestRouter);
 app.use("/", userAuth, userRouter);
+// Saved Collection (Postgres only) — savedRouter applies userAuth per-route.
+app.use("/", savedRouter);
 app.use("/", chatRouter);
 
 // 404 catcher
@@ -76,12 +78,4 @@ app.use(errorHandler);
 const server = http.createServer(app);
 initChatServer(server);
 
-connectDB()
-  .then(() => {
-    logger.info("Connected to Mongo");
-    server.listen(PORT, () => logger.info(`Server listening on :${PORT}`));
-  })
-  .catch((err) => {
-    logger.fatal({ err }, "Failed to connect to DB");
-    process.exit(1);
-  });
+server.listen(PORT, () => logger.info(`Server listening on :${PORT}`));

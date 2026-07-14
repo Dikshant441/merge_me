@@ -4,7 +4,17 @@
 // single conditional UPDATE ... RETURNING, feed exclusion uses NOT EXISTS.
 // Response objects keep the legacy Mongo field names (_id, photoURL) so the
 // frontend contract does not change.
-import { and, asc, desc, eq, ne, notExists, or, sql } from "drizzle-orm";
+import {
+  aliasedTable,
+  and,
+  asc,
+  desc,
+  eq,
+  ne,
+  notExists,
+  or,
+  sql,
+} from "drizzle-orm";
 import { db } from "../db";
 import { connectionRequests, users } from "../db/schema";
 
@@ -16,7 +26,8 @@ export type ReviewStatus = (typeof REVIEW_STATUSES)[number];
 
 // Equivalent of the old mongoose USER_SAFE_DATA projection. avatar_url is
 // exposed as photoURL — the field name the frontend has always read.
-const USER_SAFE_COLUMNS = {
+// Exported so other models (savedProfile) return the exact same user shape.
+export const USER_SAFE_COLUMNS = {
   _id: users.id,
   first_name: users.first_name,
   last_name: users.last_name,
@@ -57,22 +68,32 @@ const UNIQUE_VIOLATION = "23505"; // one_per_direction or uniq_pair
 const CHECK_VIOLATION = "23514"; // no_self_request
 
 /**
- * Feed action: create a request (interested) or hide a profile (ignored).
- * Throws { code: "ALREADY_EXISTS" } if any request already exists between
- * the pair (either direction, any status) — enforced by DB constraints,
- * so it is race-safe without a pre-check query.
+ * Feed action: create a request (interested) or soft-hide a profile (ignored).
+ *
+ * Upsert on one_per_direction: the update path fires only when MY existing
+ * row is 'ignored' — re-ignoring refreshes updated_at (pushing the profile to
+ * the back of my feed requeue), and ignored→interested lets me change my
+ * mind. Any other conflict — an interested/accepted row in this direction
+ * (setWhere misses → zero rows) or ANY reverse-direction row (uniq_pair
+ * violation) — throws { code: "ALREADY_EXISTS" }. Race-safe, no pre-check.
  */
 export async function sendRequest(
   fromUserId: string,
   toUserId: string,
   status: SendStatus
 ) {
+  let row: typeof connectionRequests.$inferSelect | undefined;
   try {
-    const [row] = await db
+    [row] = await db
       .insert(connectionRequests)
       .values({ fromUserId, toUserId, status })
+      .onConflictDoUpdate({
+        target: [connectionRequests.fromUserId, connectionRequests.toUserId],
+        set: { status, updatedAt: sql`now()` },
+        // only an 'ignored' row is rewritable; interested/accepted stay locked
+        setWhere: sql`${connectionRequests.status} = 'ignored'`,
+      })
       .returning();
-    return toApiRequest(row);
   } catch (err) {
     if (pgErrorCode(err) === UNIQUE_VIOLATION) {
       const e = new Error("Connection request alredy exists!!") as any;
@@ -86,30 +107,49 @@ export async function sendRequest(
     }
     throw err;
   }
+  if (!row) {
+    // conflict hit a non-ignored same-direction row → nothing was updated
+    const e = new Error("Connection request alredy exists!!") as any;
+    e.code = "ALREADY_EXISTS";
+    throw e;
+  }
+  return toApiRequest(row);
 }
 
 /**
  * Review action: receiver accepts or rejects a pending (interested) request.
- * Single atomic UPDATE — the WHERE clause simultaneously checks that the
- * request exists, belongs to the reviewer, and is still pending.
- * Returns the updated row, or null (caller should respond "not found").
+ *
+ * accepted → single atomic UPDATE, as before.
+ * rejected → DELETE the row instead of storing status='rejected': with no row
+ * left, uniq_pair stays trivially consistent, BOTH users reappear in each
+ * other's feed, and either side can re-initiate with a plain insert.
+ *
+ * Both branches are guarded by (id, to_user_id = reviewer, status =
+ * 'interested') in one statement; zero rows → null (caller responds
+ * "not found").
  */
 export async function reviewRequest(
   reviewerUserId: string,
   requestId: string,
   status: ReviewStatus
 ) {
-  const [row] = await db
-    .update(connectionRequests)
-    .set({ status })
-    .where(
-      and(
-        eq(connectionRequests.id, requestId),
-        eq(connectionRequests.toUserId, reviewerUserId),
-        eq(connectionRequests.status, "interested")
-      )
-    )
-    .returning();
+  const guard = and(
+    eq(connectionRequests.id, requestId),
+    eq(connectionRequests.toUserId, reviewerUserId),
+    eq(connectionRequests.status, "interested")
+  );
+
+  if (status === "accepted") {
+    const [row] = await db
+      .update(connectionRequests)
+      .set({ status })
+      .where(guard)
+      .returning();
+    return row ? toApiRequest(row) : null;
+  }
+
+  // rejected → the pair becomes feed-eligible again for both sides
+  const [row] = await db.delete(connectionRequests).where(guard).returning();
   return row ? toApiRequest(row) : null;
 }
 
@@ -166,9 +206,14 @@ export async function getConnections(userId: string): Promise<SafeUser[]> {
 }
 
 /**
- * Feed: all users except me and anyone who shares ANY connection-request
- * row with me (either direction, any status). Same semantics as the Mongo
- * version, but via NOT EXISTS instead of loading all ids into memory.
+ * Feed: show user U to me iff no request row links us, OR the only row is
+ * MINE ignoring THEM (soft ignore — requeued, not hidden forever).
+ * Still hidden: interested/accepted in either direction, and anyone who
+ * ignored ME (ignore is one-directional). Rejected rows no longer exist
+ * (deleted on review), so they can't block.
+ *
+ * Ordering: fresh users first (signup order, as before), then my ignored
+ * ones oldest-updated_at first — a just-ignored card goes to the very back.
  */
 export async function getFeed(
   userId: string,
@@ -178,33 +223,56 @@ export async function getFeed(
   const safePage = Math.max(Math.trunc(page) || 1, 1);
   const offset = (safePage - 1) * safeLimit;
 
+  // My soft-ignore of this user, left-joined so ignored profiles sort last.
+  const myIgnore = aliasedTable(connectionRequests, "my_ignore");
+  // Any OTHER row between the pair blocks visibility.
+  const blocker = aliasedTable(connectionRequests, "blocker");
+
   return db
     .select(USER_SAFE_COLUMNS)
     .from(users)
+    .leftJoin(
+      myIgnore,
+      and(
+        eq(myIgnore.fromUserId, userId),
+        eq(myIgnore.toUserId, users.id),
+        eq(myIgnore.status, "ignored")
+      )
+    )
     .where(
       and(
         ne(users.id, userId),
         notExists(
           db
             .select({ one: sql`1` })
-            .from(connectionRequests)
+            .from(blocker)
             .where(
-              or(
-                and(
-                  eq(connectionRequests.fromUserId, userId),
-                  eq(connectionRequests.toUserId, users.id)
+              and(
+                or(
+                  and(
+                    eq(blocker.fromUserId, userId),
+                    eq(blocker.toUserId, users.id)
+                  ),
+                  and(
+                    eq(blocker.toUserId, userId),
+                    eq(blocker.fromUserId, users.id)
+                  )
                 ),
-                and(
-                  eq(connectionRequests.toUserId, userId),
-                  eq(connectionRequests.fromUserId, users.id)
-                )
+                // my own soft-ignore is the one row that does NOT block
+                sql`NOT (${blocker.fromUserId} = ${userId} AND ${blocker.status} = 'ignored')`
               )
             )
         )
       )
     )
-    // Stable pagination order (uuid pks are random, so order by signup time).
-    .orderBy(asc(users.createdAt), asc(users.id))
+    .orderBy(
+      // fresh users (no ignore row) first, then my requeued ignores
+      sql`(${myIgnore.id} IS NOT NULL)`,
+      sql`${myIgnore.updatedAt} ASC NULLS FIRST`,
+      // Stable pagination order (uuid pks are random, so order by signup time).
+      asc(users.createdAt),
+      asc(users.id)
+    )
     .limit(safeLimit)
     .offset(offset);
 }

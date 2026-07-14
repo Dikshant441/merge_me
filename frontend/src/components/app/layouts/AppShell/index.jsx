@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { authApi } from "../../../../api/auth/auth.api";
+import { savedApi } from "../../../../api/saved/saved.api";
 import Sidebar from "../../../shared/Sidebar";
 import Topbar from "../../../shared/Topbar";
 import { addUser } from "../../../../store/user/slice";
+import { setSaved } from "../../../../store/saved/slice";
 import { useLocale } from "../../../../helpers/useLocale";
 import { getCopy } from "../../../../constants/copy";
 
@@ -69,6 +71,22 @@ const AppShell = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Bootstrap the Saved Collection once we know who's logged in — populates
+  // the sidebar badge and the bookmark state on feed cards everywhere.
+  useEffect(() => {
+    if (!authed) return;
+    let cancelled = false;
+    savedApi
+      .getSaved()
+      .then((res) => {
+        if (!cancelled) dispatch(setSaved(res.data));
+      })
+      .catch((err) => console.error(err));
+    return () => {
+      cancelled = true;
+    };
+  }, [authed, dispatch]);
 
   // On mobile the sidebar is a drawer — dismiss it whenever the route changes.
   // On desktop it's a persistent rail, so leave it open.

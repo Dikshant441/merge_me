@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { X, GitMerge, GitPullRequestArrow, MapPin } from "lucide-react";
+import { Bookmark, Check, MapPin, X } from "lucide-react";
 import { initialsOf, hueOf } from "../../../../helpers/avatar";
 
-// One incoming request. Layout mirrors the feed's SwipeCard — full-bleed
-// portrait with the fade overlay, name/skills on the photo — with the feed's
-// round action buttons underneath. Real data only — the timestamp comes from
-// the request row, the portrait falls back to initials, nothing is
-// placeholder. Action click fades opacity + slides up, then the parent
-// unmounts via `onResolve`.
+// One bookmarked profile in the Saved Collection. Layout mirrors the feed's
+// SwipeCard — full-bleed portrait with the fade overlay, name/skills on the
+// photo, and the feed's round action buttons underneath instead of gestures.
+// Interested / Ignore fire the SAME send endpoint as feed swipes and follow
+// the same rules — but the entry intentionally STAYS in the collection.
+// Unsave is the only action that removes it (parent unmounts via onUnsave).
 
 const MAX_CHIPS = 6;
 
@@ -24,19 +24,49 @@ const timeAgo = (iso) => {
   return new Date(iso).toLocaleDateString();
 };
 
-const RequestCard = ({ request, copy, onResolve }) => {
+const SavedCard = ({ user, copy, onAction, onUnsave }) => {
   const [removing, setRemoving] = useState(false);
   const [imgFailed, setImgFailed] = useState(false);
-  const fromUser = request.fromUserId || {};
-  const { first_name, last_name, photoURL, age, about, skills = [] } = fromUser;
+  // After a successful "interested" the swipe actions lock (re-sending would
+  // only 400 with "already exists"); ignore stays repeatable by design.
+  const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState(null);
+
+  const { first_name, last_name, photoURL, age, about, skills = [] } = user;
   const hasPhoto = Boolean(photoURL) && !imgFailed;
-  const opened = timeAgo(request.createdAt);
+  const savedOn = timeAgo(user.savedAt);
   const chips = skills.slice(0, MAX_CHIPS);
   const overflow = skills.length - chips.length;
+  const t = copy.app.saved;
 
-  const resolve = (status) => {
+  const act = async (status) => {
+    if (busy || sent) return;
+    setBusy(true);
+    try {
+      await onAction(status, user._id);
+      if (status === "interested") {
+        setSent(true);
+        setNote(t.interestSent);
+      } else {
+        setNote(t.ignoredNote);
+      }
+    } catch (err) {
+      const code = err?.response?.status;
+      if (code === 400 || code === 409) {
+        setSent(true);
+        setNote(t.alreadyRequested);
+      } else {
+        console.error(err);
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const unsave = () => {
     setRemoving(true);
-    setTimeout(() => onResolve(status, request._id), 280);
+    setTimeout(() => onUnsave(user._id), 280);
   };
 
   return (
@@ -64,22 +94,23 @@ const RequestCard = ({ request, copy, onResolve }) => {
             className="w-full h-full grid place-items-center"
             style={{
               background: `radial-gradient(120% 90% at 50% 20%,
-                oklch(0.90 0.05 ${hueOf(fromUser)}) 0%,
-                oklch(0.80 0.08 ${hueOf(fromUser)}) 100%)`,
+                oklch(0.90 0.05 ${hueOf(user)}) 0%,
+                oklch(0.80 0.08 ${hueOf(user)}) 100%)`,
             }}
           >
             <span
               className="font-mono font-semibold text-[72px] leading-none tracking-[-0.05em] select-none"
-              style={{ color: `oklch(0.42 0.11 ${hueOf(fromUser)})` }}
+              style={{ color: `oklch(0.42 0.11 ${hueOf(user)})` }}
             >
-              {initialsOf(fromUser)}
+              {initialsOf(user)}
             </span>
           </div>
         )}
 
         <span className="absolute top-4 right-4 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[.18] border border-white/[.32] text-white font-mono font-medium text-[11px] backdrop-blur-[8px] z-[2]">
-          <GitPullRequestArrow size={11} strokeWidth={2} className="text-mm-coral" />
-          {opened ? `opened ${opened}` : "merge request"}
+          <Bookmark size={11} strokeWidth={2} fill="currentColor" className="text-mm-coral" />
+          {t.savedIndicator}
+          {savedOn && <span className="opacity-80">· {savedOn}</span>}
         </span>
 
         <div className="absolute left-5 right-5 bottom-[18px] text-white z-[2]">
@@ -91,14 +122,14 @@ const RequestCard = ({ request, copy, onResolve }) => {
               <span className="font-mono font-medium text-[16px] opacity-90">{age}</span>
             )}
           </div>
-          {fromUser.role && (
+          {user.role && (
             <div className="mt-1 mb-1.5 font-mono font-medium text-[12.5px] opacity-90 [text-shadow:0_1px_6px_rgba(0,0,0,.5)]">
-              {fromUser.role}
+              {user.role}
             </div>
           )}
-          {fromUser.location && (
+          {user.location && (
             <div className="font-mono font-medium text-[12px] opacity-85 inline-flex items-center gap-1">
-              <MapPin size={12} strokeWidth={1.7} /> {fromUser.location}
+              <MapPin size={12} strokeWidth={1.7} /> {user.location}
             </div>
           )}
           {chips.length > 0 && (
@@ -129,27 +160,39 @@ const RequestCard = ({ request, copy, onResolve }) => {
       )}
 
       {/* ── Actions (same round buttons as the feed's bar) ───── */}
-      <div className="mt-auto px-5 py-3.5 border-t border-mm-border flex items-center justify-center gap-3">
-        <ActionBtn
-          onClick={() => resolve("rejected")}
-          label={copy.app.requests.reject}
-          kind="pass"
-        >
-          <X size={18} strokeWidth={1.7} />
-        </ActionBtn>
-        <ActionBtn
-          onClick={() => resolve("accepted")}
-          label={copy.app.requests.accept}
-          kind="merge"
-        >
-          <GitMerge size={18} strokeWidth={1.7} />
-        </ActionBtn>
+      <div className="mt-auto px-5 py-3.5 border-t border-mm-border flex flex-col items-center gap-2">
+        <div className="flex items-center justify-center gap-3">
+          <ActionBtn
+            onClick={() => act("ignored")}
+            disabled={busy || sent}
+            label={t.ignore}
+            kind="pass"
+          >
+            <X size={18} strokeWidth={1.7} />
+          </ActionBtn>
+          <ActionBtn onClick={unsave} label={t.unsave} active>
+            <Bookmark size={18} strokeWidth={1.7} fill="currentColor" />
+          </ActionBtn>
+          <ActionBtn
+            onClick={() => act("interested")}
+            disabled={busy || sent}
+            label={t.interested}
+            kind="merge"
+          >
+            <Check size={18} strokeWidth={1.7} />
+          </ActionBtn>
+        </div>
+        {note && (
+          <div className="font-mono font-medium text-[11.5px] text-mm-ink-3 text-center">
+            {note}
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-const ActionBtn = ({ children, onClick, kind, label }) => {
+const ActionBtn = ({ children, onClick, kind, label, active, disabled }) => {
   const hoverClass =
     kind === "pass"
       ? "hover:text-mm-danger hover:border-mm-danger/50"
@@ -160,13 +203,16 @@ const ActionBtn = ({ children, onClick, kind, label }) => {
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       aria-label={label}
       title={label}
       className={[
         "w-11 h-11",
-        "rounded-full border border-mm-border-2 bg-mm-surface text-mm-ink-2",
+        "rounded-full border border-mm-border-2 bg-mm-surface",
+        active ? "text-mm-coral border-mm-coral/50" : "text-mm-ink-2",
         "inline-flex items-center justify-center shadow-[var(--mm-shadow-soft)]",
         "transition hover:-translate-y-px",
+        "disabled:opacity-45 disabled:pointer-events-none",
         hoverClass,
       ].join(" ")}
     >
@@ -175,4 +221,4 @@ const ActionBtn = ({ children, onClick, kind, label }) => {
   );
 };
 
-export default RequestCard;
+export default SavedCard;

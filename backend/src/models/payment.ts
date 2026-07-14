@@ -1,42 +1,45 @@
-import mongoose, { Schema } from "mongoose";
+// Postgres payment model (replaces the Mongoose Payment document).
+import { eq } from "drizzle-orm";
+import { db } from "../db";
+import { payments, users, type PaymentNotes } from "../db/schema";
 
-const paymrentSchema = new Schema(
-  {
-    userId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    paymentId: {
-      type: String,
-    },
-    orderId: {
-      type: String,
-      required: true,
-    },
-    status: {
-      type: String,
-      required: true,
-    },
-    amount: {
-      type: Number,
-      required: true,
-    },
-    currency: {
-      type: String,
-      required: true,
-    },
-    receipt: {
-      type: String,
-      required: true,
-    },
-    notes: {
-      first_name: { type: String },
-      last_name: { type: String },
-      membershipType: { type: String },
-    },
-  },
-  { timestamps: true }
-);
+export async function createPayment(row: {
+  userId: string;
+  orderId: string;
+  status: string;
+  amount: number;
+  currency: string;
+  receipt?: string | null;
+  notes?: PaymentNotes;
+}) {
+  const [payment] = await db.insert(payments).values(row).returning();
+  return payment;
+}
 
-export default mongoose.model("Payment", paymrentSchema);
+/**
+ * Webhook: record the gateway's status for an order (and the Razorpay
+ * payment id). Returns null when the order isn't ours.
+ */
+export async function markPaymentStatus(
+  orderId: string,
+  status: string,
+  paymentId?: string
+) {
+  const [payment] = await db
+    .update(payments)
+    .set({ status, ...(paymentId ? { paymentId } : {}) })
+    .where(eq(payments.orderId, orderId))
+    .returning();
+  return payment ?? null;
+}
+
+/** Captured payment → flip the Postgres user to premium. */
+export async function grantPremium(userId: string, membershipType?: string) {
+  await db
+    .update(users)
+    .set({
+      isPremium: true,
+      ...(membershipType ? { membership: membershipType } : {}),
+    })
+    .where(eq(users.id, userId));
+}

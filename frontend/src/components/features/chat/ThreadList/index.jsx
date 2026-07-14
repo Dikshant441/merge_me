@@ -1,4 +1,4 @@
-import { getConnectionExtras } from "../data";
+import { getConnectionExtras } from "../../connections/data";
 
 // Left pane on Connections: filter row + a scrollable list of conversation
 // rows. Selected row is highlighted with paper-2 background.

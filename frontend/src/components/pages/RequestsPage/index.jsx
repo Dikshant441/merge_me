@@ -42,9 +42,9 @@ const Requests = () => {
         sub={copy.app.requests.sub}
       />
 
-      <div className="flex flex-col gap-4 max-w-[920px]">
+      <div className="grid gap-5 grid-cols-[repeat(auto-fill,minmax(270px,1fr))] max-w-[1180px]">
         {(!requests || requests.length === 0) ? (
-          <div className="py-20 text-center text-mm-ink-3">
+          <div className="col-span-full py-20 text-center text-mm-ink-3">
             <h3 className="m-0 font-semibold text-[22px] tracking-[-0.02em] text-mm-ink">
               {copy.app.requests.emptyTitle}
             </h3>

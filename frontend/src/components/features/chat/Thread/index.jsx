@@ -3,7 +3,8 @@ import { useSelector } from "react-redux";
 import { GitMerge, MoreHorizontal, Code, Send } from "lucide-react";
 import { chatApi } from "../../../../api/chat/chat.api";
 import { createSocketConnection } from "../../../../helpers/socket";
-import { getConnectionExtras, MOCK_MESSAGES } from "../data";
+import { getConnectionExtras } from "../../connections/data";
+import { MOCK_MESSAGES } from "../data";
 
 // Right pane on Connections — chat thread with the selected user.
 // Loads message history via /chat/:userId, opens a socket for live messages.
@@ -12,12 +13,16 @@ import { getConnectionExtras, MOCK_MESSAGES } from "../data";
 
 const Thread = ({ partner, copy }) => {
   const user = useSelector((s) => s.user);
-  const userID = user?._id;
+  // New auth (Postgres) stores the id as `id`; legacy sessions used `_id`.
+  const userID = user?.id || user?._id;
   const targetUserId = partner?._id;
 
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const scrollRef = useRef(null);
+  // The room socket from the join effect — reused for sends so we don't open
+  // a fresh connection per message.
+  const socketRef = useRef(null);
 
   const extras = partner ? getConnectionExtras(partner._id) : null;
   const sharedStack = extras?.sharedStack || [];
@@ -31,6 +36,7 @@ const Thread = ({ partner, copy }) => {
         const res = await chatApi.getChatHistory(targetUserId);
         if (cancelled) return;
         const history = (res?.data?.messages || []).map((msg) => ({
+          senderId: msg.senderId?._id,
           first_name: msg.senderId?.first_name,
           last_name: msg.senderId?.last_name,
           message: msg.message,
@@ -50,15 +56,19 @@ const Thread = ({ partner, copy }) => {
   useEffect(() => {
     if (!userID || !targetUserId) return;
     const socket = createSocketConnection();
+    socketRef.current = socket;
     socket.emit("joinChat", {
       first_name: user.first_name,
       userID,
       targetUserId,
     });
-    socket.on("receivedMessage", ({ first_name, last_name, message }) => {
-      setMessages((prev) => [...prev, { first_name, last_name, message }]);
+    socket.on("receivedMessage", ({ senderId, first_name, last_name, message }) => {
+      // own echo — already appended locally on send
+      if (senderId === userID) return;
+      setMessages((prev) => [...prev, { senderId, first_name, last_name, message }]);
     });
     return () => {
+      socketRef.current = null;
       socket.disconnect();
     };
   }, [userID, targetUserId]);
@@ -70,8 +80,8 @@ const Thread = ({ partner, copy }) => {
   }, [messages, targetUserId]);
 
   const sendMessage = () => {
-    if (newMessage.trim() === "" || !targetUserId) return;
-    const socket = createSocketConnection();
+    const socket = socketRef.current;
+    if (newMessage.trim() === "" || !targetUserId || !socket) return;
     socket.emit("sendMessage", {
       first_name: user.first_name,
       last_name: user.last_name,
@@ -81,7 +91,12 @@ const Thread = ({ partner, copy }) => {
     });
     setMessages((prev) => [
       ...prev,
-      { first_name: user.first_name, last_name: user.last_name, message: newMessage },
+      {
+        senderId: userID,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        message: newMessage,
+      },
     ]);
     setNewMessage("");
   };
@@ -149,7 +164,7 @@ const Thread = ({ partner, copy }) => {
               <Bubble
                 key={i}
                 msg={{
-                  from: user?.first_name === m.first_name ? "me" : "them",
+                  from: m.senderId === userID ? "me" : "them",
                   text: m.message,
                   time: "",
                 }}

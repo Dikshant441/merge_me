@@ -3,26 +3,18 @@ import { useDispatch, useSelector } from "react-redux";
 import { useOutletContext } from "react-router";
 import { X, Check, Bookmark } from "lucide-react";
 import { feedApi } from "../../../api/feed/feed.api";
-import { addFeed, removeFeed } from "../../../store/feed/slice";
+import { savedApi } from "../../../api/saved/saved.api";
+import { addFeed, removeFeed, requeueFeed } from "../../../store/feed/slice";
+import { addSaved, removeSaved } from "../../../store/saved/slice";
 import PageHeader from "../../shared/PageHeader";
 import SwipeCard from "../../features/feed/SwipeCard";
 import FeedRail from "../../features/feed/FeedRail";
 import { getFeedExtras } from "../../features/feed/data";
 
-// Fisher-Yates shuffle — returns a new array so the source deck stays intact
-// for the next refill.
-const shuffle = (arr) => {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-};
-
 const Feed = () => {
   const dispatch = useDispatch();
   const feed = useSelector((s) => s.feed);
+  const savedIds = useSelector((s) => s.saved.savedIds);
   const { copy } = useOutletContext();
 
   // Bumped by the action bar / keyboard to fire a synthetic swipe.
@@ -73,13 +65,39 @@ const Feed = () => {
       console.error(err);
     }
 
-    if (feed.length <= 1) {
-      // Last card swiped — reshuffle the full deck back in for another pass.
-      dispatch(addFeed(shuffle(deckRef.current)));
+    if (status === "ignored") {
+      // Soft ignore — the card requeues at the END of the deck and keeps
+      // cycling back, mirroring the backend's feed ordering.
+      dispatch(requeueFeed(current._id));
     } else {
+      // Interested — gone from the feed until the request is rejected.
       dispatch(removeFeed(current._id));
     }
     setFireKey(null);
+  };
+
+  // Bookmark toggle — optimistic, never advances the card. The profile stays
+  // in the deck; it just also lives in the Saved Collection now.
+  const toggleSave = async () => {
+    const current = feed?.[0];
+    if (!current) return;
+    if (savedIds[current._id]) {
+      dispatch(removeSaved(current._id));
+      try {
+        await savedApi.unsave(current._id);
+      } catch (err) {
+        console.error(err);
+        dispatch(addSaved(current)); // roll back
+      }
+    } else {
+      dispatch(addSaved(current));
+      try {
+        await savedApi.save(current._id);
+      } catch (err) {
+        console.error(err);
+        dispatch(removeSaved(current._id)); // roll back
+      }
+    }
   };
 
   const ranOut = !feed || feed.length === 0;
@@ -121,7 +139,10 @@ const Feed = () => {
                   .reverse()
                   .map(({ user, depth }) => (
                     <SwipeCard
-                      key={`${user._id}-${depth}`}
+                      // `used` in the key forces a fresh mount after every
+                      // swipe — without it, a requeued last card would keep
+                      // its flown-out state and stay invisible.
+                      key={`${user._id}-${depth}-${used}`}
                       user={user}
                       isTop={depth === 0}
                       depth={depth}
@@ -129,6 +150,8 @@ const Feed = () => {
                       fireKey={depth === 0 ? fireKey : null}
                       shared={getFeedExtras(user).shared}
                       online={getFeedExtras(user).online}
+                      saved={Boolean(savedIds[user._id])}
+                      savedLabel={copy.app.saved.savedIndicator}
                     />
                   ))}
               </div>
@@ -138,9 +161,21 @@ const Feed = () => {
                   <X size={18} strokeWidth={1.7} />
                 </ActionBtn>
                 <Kbd>{copy.app.feed.passKb}</Kbd>
-                {/* bookmark — design has it; no backend yet, so no-op. */}
-                <ActionBtn label={copy.app.feed.bookmark}>
-                  <Bookmark size={18} strokeWidth={1.7} />
+                {/* bookmark — toggles the Saved Collection, card stays put. */}
+                <ActionBtn
+                  onClick={toggleSave}
+                  active={Boolean(cur && savedIds[cur._id])}
+                  label={
+                    cur && savedIds[cur._id]
+                      ? copy.app.saved.unsaveTooltip
+                      : copy.app.saved.saveTooltip
+                  }
+                >
+                  <Bookmark
+                    size={18}
+                    strokeWidth={1.7}
+                    fill={cur && savedIds[cur._id] ? "currentColor" : "none"}
+                  />
                 </ActionBtn>
                 <Kbd>{copy.app.feed.mergeKb}</Kbd>
                 <ActionBtn onClick={() => setFireKey({ dir: "right", n: Date.now() })} kind="merge" label={copy.app.feed.merge}>
@@ -157,7 +192,7 @@ const Feed = () => {
   );
 };
 
-const ActionBtn = ({ children, onClick, kind, label }) => {
+const ActionBtn = ({ children, onClick, kind, label, active }) => {
   const hoverClass =
     kind === "pass"
       ? "hover:text-mm-danger hover:border-mm-danger/50"
@@ -169,9 +204,11 @@ const ActionBtn = ({ children, onClick, kind, label }) => {
       type="button"
       onClick={onClick}
       aria-label={label}
+      title={label}
       className={[
         "w-11 h-11",
-        "rounded-full border border-mm-border-2 bg-mm-surface text-mm-ink-2",
+        "rounded-full border border-mm-border-2 bg-mm-surface",
+        active ? "text-mm-coral border-mm-coral/50" : "text-mm-ink-2",
         "inline-flex items-center justify-center shadow-[var(--mm-shadow-soft)]",
         "transition hover:-translate-y-px",
         hoverClass,

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { MapPin } from "lucide-react";
+import { Bookmark, MapPin } from "lucide-react";
 import { initialsOf, hueOf } from "../../../../helpers/avatar";
 
 // Photo card the user can drag left/right to merge/pass.
@@ -15,7 +15,7 @@ import { initialsOf, hueOf } from "../../../../helpers/avatar";
 const FLY_OUT_MS = 380;
 const THRESHOLD = 110;
 
-const SwipeCard = ({ user, isTop, depth, onSwipe, fireKey, shared, online }) => {
+const SwipeCard = ({ user, isTop, depth, onSwipe, fireKey, shared, online, saved, savedLabel }) => {
   const ref = useRef(null);
   const start = useRef({ x: 0, y: 0 });
   const [drag, setDrag] = useState({ x: 0, dragging: false });
@@ -117,6 +117,13 @@ const SwipeCard = ({ user, isTop, depth, onSwipe, fireKey, shared, online }) => 
           <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[.18] border border-white/[.32] text-white font-mono font-medium text-[11px] backdrop-blur-[8px] z-[2]">
             <span className="w-1.5 h-1.5 rounded-full bg-mm-success shadow-[0_0_8px_var(--mm-success)]" />
             online
+          </span>
+        )}
+
+        {saved && (
+          <span className="absolute top-4 right-4 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[.18] border border-white/[.32] text-white font-mono font-medium text-[11px] backdrop-blur-[8px] z-[2]">
+            <Bookmark size={11} strokeWidth={2} fill="currentColor" className="text-mm-coral" />
+            {savedLabel}
           </span>
         )}
 

@@ -1,7 +1,8 @@
 import { Server as SocketIOServer, Socket } from "socket.io";
 import type { Server as HTTPServer } from "http";
 import crypto from "crypto";
-import Chat from "../models/chat";
+import { isUuid } from "../models/connectionRequest";
+import { areConnected, saveChatMessage } from "../models/chatMessage";
 
 const getSecretRoomId = (userID: string, targetUserId: string): string => {
   return crypto
@@ -24,46 +25,33 @@ const initChatServer = (server: HTTPServer): void => {
   });
 
   io.on("connection", (socket: Socket) => {
-    socket.on("joinChat", ({ first_name, userID, targetUserId }: any) => {
-      const roomId = getSecretRoomId(userID, targetUserId);
-      console.log(first_name + " joined roomId " + roomId);
-      socket.join(roomId);
+    socket.on("joinChat", ({ userID, targetUserId }: any) => {
+      if (!isUuid(userID) || !isUuid(targetUserId)) return;
+      socket.join(getSecretRoomId(userID, targetUserId));
     });
 
     socket.on(
       "sendMessage",
       async ({ first_name, last_name, userID, targetUserId, message }: any) => {
-        const roomId = getSecretRoomId(userID, targetUserId);
-        console.log(first_name + " send message " + message);
-
         try {
-          const roomId = getSecretRoomId(userID, targetUserId);
-          console.log(first_name + " " + message);
+          if (!isUuid(userID) || !isUuid(targetUserId)) return;
+          if (typeof message !== "string" || message.trim() === "") return;
 
-          // TODO: Check if userID & targetUserId are friends
+          // Only accepted connections may talk.
+          if (!(await areConnected(userID, targetUserId))) return;
 
-          let chat: any = await Chat.findOne({
-            participants: { $all: [userID, targetUserId] },
-          });
+          await saveChatMessage(userID, targetUserId, message);
 
-          if (!chat) {
-            chat = new Chat({
-              participants: [userID, targetUserId],
-              messages: [],
-            });
-          }
-
-          chat.messages.push({
+          // senderId lets receivers drop their own echo client-side.
+          io.to(getSecretRoomId(userID, targetUserId)).emit("receivedMessage", {
             senderId: userID,
+            first_name,
+            last_name,
             message,
           });
-
-          await chat.save();
-          io.to(roomId).emit("messageReceived", { first_name, last_name, message });
         } catch (err) {
           console.log(err);
         }
-        io.to(roomId).emit("receivedMessage", { first_name, last_name, message });
       }
     );
 

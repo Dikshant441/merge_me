@@ -2,7 +2,7 @@ import jwt, { type SignOptions } from "jsonwebtoken";
 import type { Response } from "express";
 
 const ACCESS_TTL_SEC = 15 * 60;                     // 15 minutes
-export const REFRESH_TTL_SEC = 30 * 24 * 60 * 60;   // 30 days
+export const REFRESH_TTL_SEC = 24 * 60 * 60;         // 1 day
 
 const isProd = process.env.NODE_ENV === "production";
 // Refresh cookie Path must match what the BROWSER requests. The SPA talks to

@@ -1,31 +1,31 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import { userAuth } from "../middleware/auth";
-import Chat from "../models/chat";
+import { isUuid } from "../models/connectionRequest";
+import { getChatHistory } from "../models/chatMessage";
 
-const ChatRouter = express.Router();
+const chatRouter = express.Router();
 
-ChatRouter.get("/chat/:targetUserId", userAuth, async (req: Request, res: Response) => {
-  const { targetUserId } = req.params;
-  const userId = req.user._id;
-  try {
-    let chat = await Chat.findOne({
-      participants: { $all: [userId, targetUserId] },
-    }).populate({
-      path: "messages.senderId",
-      select: "first_name last_name",
-    });
-
-    if (!chat) {
-      chat = new Chat({
-        participants: [userId, targetUserId],
-        messages: [],
-      });
-      await chat.save();
+// GET /chat/:targetUserId — message history with one connection, oldest
+// first. Shape mirrors the old Mongo populate: { messages: [{ senderId:
+// { _id, first_name, last_name }, message, createdAt }] }.
+chatRouter.get(
+  "/chat/:targetUserId",
+  userAuth,
+  async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+      if (!req.pgUser) {
+        return res.status(401).send("User not authorized");
+      }
+      const targetUserId = req.params.targetUserId as string;
+      // Non-uuid ids (legacy Mongo ObjectIds) have no Postgres messages.
+      const messages = isUuid(targetUserId)
+        ? await getChatHistory(req.pgUser.id, targetUserId)
+        : [];
+      res.json({ messages });
+    } catch (err) {
+      next(err);
     }
-    res.json(chat);
-  } catch (err) {
-    console.log(err);
   }
-});
+);
 
-export default ChatRouter;
+export default chatRouter;
