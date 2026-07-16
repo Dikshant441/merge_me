@@ -25,9 +25,6 @@ const AuthNav = ({ copy }) => {
           </Link>
           <LangToggle />
           <ThemeToggle />
-          <span className="hidden md:inline font-mono font-medium text-xs text-mm-ink-3">
-            {copy.auth.navStatus}
-          </span>
         </div>
       </div>
     </nav>

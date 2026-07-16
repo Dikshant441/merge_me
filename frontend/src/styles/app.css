@@ -10,8 +10,8 @@
   pointer-events: none;
   z-index: 0;
   background:
-    radial-gradient(ellipse 70% 50% at 95% 4%,  oklch(0.85 0.14 38 / .35), transparent 60%),
-    radial-gradient(ellipse 60% 50% at 4% 88%,  oklch(0.86 0.10 70 / .28), transparent 60%);
+    radial-gradient(ellipse 70% 50% at 95% 4%,  oklch(from var(--mm-coral) 0.88 0.07 h / .35), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 4% 88%,  oklch(from var(--mm-coral) 0.92 0.04 h / .30), transparent 60%);
 }
 .app-bg::after {
   content: "";
@@ -23,8 +23,8 @@
 }
 [data-theme="dark"] .app-bg {
   background:
-    radial-gradient(ellipse 70% 50% at 95% 4%, oklch(0.42 0.16 30 / .28), transparent 60%),
-    radial-gradient(ellipse 60% 50% at 4% 88%, oklch(0.40 0.10 280 / .28), transparent 60%);
+    radial-gradient(ellipse 70% 50% at 95% 4%, oklch(from var(--mm-coral) 0.34 0.06 h / .30), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 4% 88%, oklch(from var(--mm-coral) 0.30 0.04 h / .25), transparent 60%);
 }
 [data-theme="dark"] .app-bg::after { opacity: 0.22; mix-blend-mode: screen; }
 

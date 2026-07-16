@@ -485,7 +485,6 @@ const hi = {
 
   auth: {
     backToMerge: "मर्ज मी पर वापस",
-    navStatus: "v1.0 · पब्लिक बीटा",
     tabSignIn: "साइन इन",
     tabSignUp: "अकाउंट बनाएँ",
 

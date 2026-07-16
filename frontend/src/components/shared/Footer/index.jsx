@@ -39,13 +39,13 @@ const ColHeading = ({ children }) => (
   </div>
 );
 
-const SocialBtn = ({ href, label, children }) => (
+const SocialBtn = ({ href, label, brandClass, children }) => (
   <a
     href={href}
     target="_blank"
     rel="noopener noreferrer"
     aria-label={label}
-    className="w-9 h-9 rounded-full border border-mm-border-2 bg-mm-surface hover:bg-mm-paper hover:border-mm-border text-mm-ink-2 hover:text-mm-ink transition inline-flex items-center justify-center"
+    className={`w-9 h-9 rounded-full border border-mm-border-2 text-white transition inline-flex items-center justify-center hover:opacity-85 hover:-translate-y-0.5 ${brandClass}`}
   >
     {children}
   </a>
@@ -114,13 +114,25 @@ const Footer = ({ mobileSectionLinks = [] }) => (
             Built by devs, for devs.
           </p>
           <div className="flex items-center gap-2.5">
-            <SocialBtn href="https://github.com/Dikshant441" label="GitHub">
+            <SocialBtn
+              href="https://github.com/Dikshant441"
+              label="GitHub"
+              brandClass="bg-[#181717]"
+            >
               <GitHubIcon />
             </SocialBtn>
-            <SocialBtn href="https://x.com/Dikshant441" label="Twitter / X">
+            <SocialBtn
+              href="https://x.com/Dikshant441"
+              label="Twitter / X"
+              brandClass="bg-black"
+            >
               <TwitterIcon />
             </SocialBtn>
-            <SocialBtn href="https://www.linkedin.com/in/dikshant-singh/" label="LinkedIn">
+            <SocialBtn
+              href="https://www.linkedin.com/in/dikshant-singh/"
+              label="LinkedIn"
+              brandClass="bg-[#0A66C2]"
+            >
               <LinkedInIcon />
             </SocialBtn>
           </div>

@@ -14,10 +14,10 @@
   pointer-events: none;
   z-index: 0;
   background:
-    radial-gradient(ellipse 80% 60% at 88% 8%,  oklch(0.80 0.18 38 / .55), transparent 60%),
-    radial-gradient(ellipse 60% 50% at 12% 22%, oklch(0.88 0.14 70 / .50), transparent 60%),
-    radial-gradient(ellipse 70% 60% at 4% 92%,  oklch(0.82 0.10 320 / .35), transparent 60%),
-    radial-gradient(ellipse 50% 40% at 95% 80%, oklch(0.74 0.16 30 / .35), transparent 60%);
+    radial-gradient(ellipse 80% 60% at 88% 8%,  oklch(from var(--mm-coral) 0.86 0.09 h / .55), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 12% 22%, oklch(from var(--mm-coral) 0.90 0.05 calc(h + 35) / .50), transparent 60%),
+    radial-gradient(ellipse 70% 60% at 4% 92%,  oklch(from var(--mm-coral) 0.88 0.03 calc(h + 90) / .35), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 95% 80%, oklch(from var(--mm-coral) 0.80 0.06 calc(h - 30) / .35), transparent 60%);
 }
 .landing-bg::after {
   content: "";
@@ -27,15 +27,14 @@
   opacity: 0.45;
   mix-blend-mode: multiply;
 }
+/* Dark mode: no mesh or grain — the page wrapper's flat bg-mm-bg shows
+ * through. Don't paint an opaque background here: this fixed z-0 layer
+ * sits above static content and would hide it (e.g. the footer). */
 [data-theme="dark"] .landing-bg {
-  background:
-    radial-gradient(ellipse 80% 60% at 88% 8%,  oklch(0.50 0.18 30 / .50), transparent 60%),
-    radial-gradient(ellipse 60% 50% at 12% 22%, oklch(0.42 0.12 280 / .50), transparent 60%),
-    radial-gradient(ellipse 70% 60% at 4% 92%,  oklch(0.40 0.10 320 / .50), transparent 60%);
+  background: none;
 }
 [data-theme="dark"] .landing-bg::after {
-  opacity: 0.25;
-  mix-blend-mode: screen;
+  display: none;
 }
 
 @keyframes mm-pulse {
@@ -62,11 +61,6 @@
           background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
-}
-[data-theme="dark"] .mm-grad-text {
-  background: linear-gradient(120deg, oklch(0.80 0.16 50), oklch(0.86 0.16 60), oklch(0.82 0.10 320));
-  -webkit-background-clip: text;
-          background-clip: text;
 }
 
 /* Eyebrow with a small gradient hairline before the text. */
@@ -115,12 +109,12 @@
   background: radial-gradient(circle at 100% 0%, var(--mm-feature-tint, transparent), transparent 55%);
 }
 .mm-feature > * { position: relative; z-index: 1; }
-.mm-tint-coral  { --mm-feature-tint: oklch(0.92 0.10 38 / .55); }
-.mm-tint-amber  { --mm-feature-tint: oklch(0.90 0.10 70 / .55); }
-.mm-tint-violet { --mm-feature-tint: oklch(0.90 0.08 280 / .45); }
-[data-theme="dark"] .mm-tint-coral  { --mm-feature-tint: oklch(0.45 0.12 38 / .35); }
-[data-theme="dark"] .mm-tint-amber  { --mm-feature-tint: oklch(0.45 0.10 70 / .35); }
-[data-theme="dark"] .mm-tint-violet { --mm-feature-tint: oklch(0.40 0.10 280 / .35); }
+.mm-tint-coral  { --mm-feature-tint: oklch(from var(--mm-coral) 0.92 0.06 h / .55); }
+.mm-tint-amber  { --mm-feature-tint: oklch(from var(--mm-amber) 0.92 0.04 h / .55); }
+.mm-tint-violet { --mm-feature-tint: oklch(from var(--mm-violet) 0.91 0.04 h / .45); }
+[data-theme="dark"] .mm-tint-coral  { --mm-feature-tint: oklch(from var(--mm-coral) 0.40 0.07 h / .35); }
+[data-theme="dark"] .mm-tint-amber  { --mm-feature-tint: oklch(from var(--mm-amber) 0.42 0.05 h / .35); }
+[data-theme="dark"] .mm-tint-violet { --mm-feature-tint: oklch(from var(--mm-violet) 0.40 0.05 h / .35); }
 
 /* Swipe-stack stamps — oklch needed for accessible contrast on the photo. */
 .mm-stamp-merge {
