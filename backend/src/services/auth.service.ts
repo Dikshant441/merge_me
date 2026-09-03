@@ -21,7 +21,7 @@ export type PublicUser = {
   last_name: string;
   avatarUrl: string | null;
   about: string | null;
-  skills: string[] | null;
+  skills: string[] | null; 
   age: number | null;
   gender: string | null;
   socials: { platform: string; url: string }[] | null;

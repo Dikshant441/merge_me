@@ -1,6 +1,52 @@
-improvement.text
+# Single .gitignore for the whole monorepo (root, backend/, frontend/).
+# Unanchored patterns match at any depth; patterns starting with "/" are
+# anchored to the repo root.
 
-# AI assistant configs and helper files (local dev tools — never commit)
+# ─── Dependencies ───
+node_modules/
+
+# This repo uses pnpm — pnpm-lock.yaml is the only lockfile we commit
+package-lock.json
+yarn.lock
+
+# ─── Environment / secrets ───
+.env
+.env.local
+.env.*.local
+
+# ─── Build output ───
+dist
+dist-ssr
+*.tsbuildinfo
+/backend/src/generated/prisma
+
+# ─── Cache ───
+.cache
+.vite
+coverage
+
+# ─── Logs ───
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ─── Deployment artifacts ───
+deploy.md
+.vercel
+.netlify
+
+# ─── Local notes / scratch docs (never commit) ───
+improvement.text
+/backend/docs/
+/backend/information.txt
+/backend/roazorpay.md
+/backend/apiList.md
+
+# ─── AI assistant configs and helper files (local dev tools) ───
 .claude/
 .cursor/
 .aider*
@@ -13,3 +59,14 @@ improvement.text
 .github/copilot-instructions.md
 CLAUDE.md
 AGENTS.md
+
+# ─── Editor / OS ───
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

@@ -26,7 +26,7 @@ function App() {
         <PersistGate loading={null} persistor={persistor}>
           <BrowserRouter basename="/">
             <AuthSync />
-            <Routes>
+            <Routes> 
             {/* Public — landing + auth. Keeps the old MainLayout chrome. */}
             <Route path="/" element={<Body />}>
               <Route index element={<LandingOrFeed />} />
