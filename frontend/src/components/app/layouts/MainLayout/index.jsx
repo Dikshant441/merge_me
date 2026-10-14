@@ -17,7 +17,6 @@ const PUBLIC_PATHS = new Set([
   "/hi-in",
   "/login",
   "/signup",
-  "/verify-email",
   "/forgot-password",
   "/reset-password",
 ]);
@@ -46,7 +45,6 @@ const Body = () => {
   const isAuthRoute = [
     "/login",
     "/signup",
-    "/verify-email",
     "/forgot-password",
     "/reset-password",
   ].includes(trimmedPath);

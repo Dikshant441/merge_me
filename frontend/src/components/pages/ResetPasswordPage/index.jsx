@@ -22,8 +22,7 @@ const pwScore = (pwd) => {
 
 // Landing page for the reset email link (/reset-password?token=RAW). On
 // success the backend kills every other session, signs this device in
-// (cookies set) and returns the user — so we go straight to /feed, exactly
-// like VerifyEmailPage.
+// (cookies set) and returns the user — so we go straight to /feed.
 const ResetPassword = () => {
   const [params] = useSearchParams();
   const navigate = useNavigate();

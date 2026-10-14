@@ -21,7 +21,6 @@
   "author": "Dikshant Singh",
   "license": "ISC",
   "dependencies": {
-    "arctic": "^3.7.0",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -30,7 +29,6 @@
     "express": "^5.1.0",
     "express-rate-limit": "^8.5.2",
     "helmet": "^8.2.0",
-    "jose": "^6.0.11",
     "jsonwebtoken": "^9.0.2",
     "pino": "^10.3.1",
     "pino-http": "^11.0.0",

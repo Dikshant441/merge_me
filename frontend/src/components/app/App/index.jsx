@@ -15,7 +15,6 @@ import Saved from "../../pages/SavedPage";
 import Premium from "../../pages/PremiumPage";
 import Help from "../../pages/HelpPage";
 import LandingOrFeed from "../../pages/LandingOrFeedPage";
-import VerifyEmail from "../../pages/VerifyEmailPage";
 import ForgotPassword from "../../pages/ForgotPasswordPage";
 import ResetPassword from "../../pages/ResetPasswordPage";
 
@@ -34,7 +33,6 @@ function App() {
               <Route path="hi-in" element={<LandingOrFeed />} />
               <Route path="login" element={<LogIn />} />
               <Route path="signup" element={<LogIn />} />
-              <Route path="verify-email" element={<VerifyEmail />} />
               <Route path="forgot-password" element={<ForgotPassword />} />
               <Route path="reset-password" element={<ResetPassword />} />
             </Route>

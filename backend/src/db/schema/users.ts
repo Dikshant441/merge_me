@@ -18,7 +18,6 @@ export const users = pgTable("users", {
   first_name: text("first_name").notNull(),
   last_name: text("last_name").notNull(),
   email: citext("email").notNull().unique(),
-  emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
   avatarUrl: text("avatar_url"),
   about: text("about").default(""),
   skills: text("skills").array().default([]),

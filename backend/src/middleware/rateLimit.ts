@@ -8,7 +8,6 @@ const POLICIES = {
   reset:   { windowMs: 15 * 60 * 1000, limit: 3,  message: "Too many reset requests" },
   resend:  { windowMs: 15 * 60 * 1000, limit: 3,  message: "Too many reset resend attempts" },
   verify:  { windowMs: 60 * 60 * 1000, limit: 10, message: "Too many verify requests" },
-  oauth:   { windowMs: 60 * 1000,      limit: 20, message: "Too many OAuth attempts" },
 } as const;
 
 export type RateKey = keyof typeof POLICIES;

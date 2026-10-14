@@ -1,7 +1,7 @@
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { users } from "./users";
 
-// Same shape as email_verifications but with a shorter expiry (15–30 min
+// Hashed, single-use reset tokens with a short expiry (15–30 min
 // recommended) because the security implications are bigger. tokenHash is
 // SHA-256 of the raw token; raw token only appears in the reset email URL.
 // On successful reset, app code must: update accounts.passwordHash where

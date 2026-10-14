@@ -22,11 +22,6 @@ export const HELP_FAQS = [
     a: "Yes — the core experience is free. Pro adds rewind, more daily merges, and priority placement in other people's queues.",
   },
   {
-    id: 3,
-    q: "How do I verify my GitHub?",
-    a: "Sign in with GitHub from the login screen. We only read your public profile and verified email — we never post anything on your behalf.",
-  },
-  {
     id: 4,
     q: "Can I change my profile details?",
     a: "Open Profile → Edit to update your name, avatar, about, skills, age, and gender. Changes save instantly.",

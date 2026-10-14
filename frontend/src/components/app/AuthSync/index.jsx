@@ -6,14 +6,13 @@ import { onAuthMessage } from "../../../helpers/authChannel";
 import { setNavigate } from "../../../helpers/navigation";
 
 // Public routes a freshly-authed tab should bounce away from to /feed once
-// another tab signs in (e.g. the "Check your inbox" tab after email verify).
+// another tab signs in.
 const PUBLIC_PATHS = new Set([
   "/",
   "/en-in",
   "/hi-in",
   "/login",
   "/signup",
-  "/verify-email",
 ]);
 
 // Renders nothing. Listens for cross-tab auth events (see helpers/authChannel)

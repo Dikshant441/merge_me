@@ -5,8 +5,7 @@
  *          Users that ALREADY exist in Postgres (signed up via the new auth
  *          system — matched by email) are only linked, never overwritten.
  *          New rows also get an accounts row (provider='password') carrying
- *          the bcrypt hash, and email_verified_at is set (Mongo-era accounts
- *          predate email verification; without it login would be blocked).
+ *          the bcrypt hash.
  * Phase 2: copy connection requests, mapping fromUserId/toUserId through
  *          legacy_mongo_id. Duplicate pairs that Mongo allowed (A->B and
  *          B->A) are resolved newest-updatedAt-wins; older rows are logged
@@ -47,7 +46,7 @@ async function migrateUsers(mongoDb: mongoose.mongo.Db, sql: postgres.Sql) {
     const [row] = await sql`
       INSERT INTO users
         (first_name, last_name, email, avatar_url, about, skills, age, gender,
-         is_premium, membership, email_verified_at, legacy_mongo_id,
+         is_premium, membership, legacy_mongo_id,
          created_at, updated_at)
       VALUES
         (${u.first_name ?? ""},
@@ -60,7 +59,6 @@ async function migrateUsers(mongoDb: mongoose.mongo.Db, sql: postgres.Sql) {
          ${u.gender ?? null},
          ${u.isPremium ?? false},
          ${u.membershipType ?? "Free"},
-         ${u.createdAt ?? new Date()},
          ${String(u._id)},
          ${u.createdAt ?? new Date()},
          ${u.updatedAt ?? new Date()})

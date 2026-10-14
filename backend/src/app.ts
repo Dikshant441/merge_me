@@ -18,7 +18,6 @@ import savedRouter from "./routes/savedRoutes";
 import paymentRouter from "./routes/paymentRoutes";
 import chatRouter from "./routes/chatRoutes";
 import initChatServer from "./sockets";
-import oauthRouter from "./routes/oauthRoutes"; 
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
@@ -43,6 +42,8 @@ const frontendOrigins = (process.env.FRONTEND_URL ?? "")
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
+
+
 app.use(cors({ origin: frontendOrigins, credentials: true }));
 
 app.use(
@@ -53,16 +54,18 @@ app.use(
     },
   })
 );
+
 app.use(cookieParser());
 
 // ─── New auth (Drizzle + Postgres) ──────────────────────────────
 app.use("/auth", authRouter);
-app.use("/auth", oauthRouter); 
+
 // ─── App routes (all Drizzle + Postgres) ────────────────────────
 app.use("/", paymentRouter);
 app.use("/", userAuth, profileRouter);
 app.use("/", userAuth, requestRouter);
 app.use("/", userAuth, userRouter);
+
 // Saved Collection (Postgres only) — savedRouter applies userAuth per-route.
 app.use("/", savedRouter);
 app.use("/", chatRouter);

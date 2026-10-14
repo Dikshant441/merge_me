@@ -10,6 +10,7 @@ export const logger = pino({
       options: { colorize: true, translateTime: "SYS:HH:MM:ss" },
     },
   }),
+  
   // Strip sensitive fields if they slip into logged objects.
   redact: {
     paths: [

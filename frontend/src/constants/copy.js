@@ -117,11 +117,6 @@ const en = {
     signUpTitleB: ".",
     signUpSub: "Two minutes to set up. Then start matching by stack, not by selfie.",
 
-    oauthGitHub: "Continue with GitHub",
-    oauthGitLab: "Continue with GitLab",
-    oauthGoogle: "Continue with Google",
-    divider: "or with email",
-
     fldFirst: "First name",
     fldFirstPh: "Aanya",
     fldLast: "Last name (optional)",
@@ -497,11 +492,6 @@ const hi = {
     signUpTitleEm: "डेव प्रोफ़ाइल",
     signUpTitleB: " बनाएँ।",
     signUpSub: "दो मिनट में सेट करें। फिर सेल्फी नहीं — स्टैक से मैच करें।",
-
-    oauthGitHub: "GitHub से जारी रखें",
-    oauthGitLab: "GitLab से जारी रखें",
-    oauthGoogle: "Google से जारी रखें",
-    divider: "या ईमेल से",
 
     fldFirst: "पहला नाम",
     fldFirstPh: "आन्या",

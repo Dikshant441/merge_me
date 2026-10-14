@@ -8,6 +8,7 @@ import {
 
 const userRouter = express.Router();
 
+// requeat received
 userRouter.get(
   "/user/requests/received",
   userAuth,
@@ -30,6 +31,7 @@ userRouter.get(
   }
 );
 
+// user connection
 userRouter.get(
   "/user/connections",
   userAuth,
@@ -52,6 +54,7 @@ userRouter.get(
   }
 );
 
+// user feed
 userRouter.get(
   "/feed",
   userAuth,

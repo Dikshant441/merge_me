@@ -1,8 +1,7 @@
 import { useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
-import { useNavigate, useSearchParams, useLocation } from "react-router";
-import { ArrowRight, AlertCircle, Check } from "lucide-react";
-import OAuthRow from "../OAuthRow";
+import { useNavigate, useLocation } from "react-router";
+import { ArrowRight, AlertCircle } from "lucide-react";
 import { authApi } from "../../../../api/auth/auth.api";
 import { addUser } from "../../../../store/user/slice";
 import { broadcastLogin } from "../../../../helpers/authChannel";
@@ -19,16 +18,6 @@ const pwScore = (pwd) => {
   return s;
 };
 
-
-const OAUTH_ERRORS = {
-  email_exists_password:
-    "This email already has a password account. Sign in with your password first.",
-  no_account: "No account found for that email. Switch to Sign up to create one.",
-  no_verified_email: "Your provider account has no verified email.",
-  oauth_state: "Sign-in expired or was tampered with. Please try again.",
-  oauth_failed: "Social sign-in failed. Please try again.",
-};
-
 const AuthForm = ({ copy, mode }) => {
   const isSignUp = mode === "signup";
   const t = copy.auth;
@@ -37,17 +26,13 @@ const AuthForm = ({ copy, mode }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [searchParams] = useSearchParams();
-  const oauthError = OAUTH_ERRORS[searchParams.get("error")];
-
   const [first_name, setFirstName] = useState("");
   const [last_name, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
-  const [error, setError] = useState(oauthError ?? "");
+  const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [signupDone, setSignupDone] = useState(null); // email, set after signup
 
   const score = useMemo(() => pwScore(password), [password]);
   const scoreLabel = [t.pwd0, t.pwd1, t.pwd2, t.pwd3, t.pwd4][score];
@@ -58,15 +43,13 @@ const AuthForm = ({ copy, mode }) => {
     setError("");
     setSubmitting(true);
     try {
-      if (isSignUp) {
-        await authApi.signup({ first_name, last_name, email, password });
-        setSignupDone(email); // no session yet — wait for email verification
-      } else {
-        const res = await authApi.login({ email, password });
-        dispatch(addUser(res.data.user));
-        broadcastLogin(res.data.user); // sync any other open tabs
-        navigate(location.state?.from ?? "/feed", { replace: true });
-      }
+      // Signup signs the user in too, so both paths land in the app.
+      const res = isSignUp
+        ? await authApi.signup({ first_name, last_name, email, password })
+        : await authApi.login({ email, password });
+      dispatch(addUser(res.data.user));
+      broadcastLogin(res.data.user); // sync any other open tabs
+      navigate(location.state?.from ?? "/feed", { replace: true });
     } catch (err) {
       const msg = err.response?.data?.message || err.message || "Something went wrong";
       setError((isSignUp ? "Signup failed: " : "Login failed: ") + msg);
@@ -74,35 +57,6 @@ const AuthForm = ({ copy, mode }) => {
       setSubmitting(false);
     }
   };
-
-  if (signupDone) {
-    return (
-      <div className="bg-transparent border-0 shadow-none rounded-none p-0 lg:bg-mm-surface lg:border lg:border-mm-border lg:rounded-3xl lg:shadow-[var(--mm-shadow-card)] lg:p-10 min-h-[560px] flex flex-col items-center justify-center text-center">
-        <div className="w-full max-w-[380px]">
-          <div className="mx-auto mb-5 w-12 h-12 rounded-full bg-mm-paper border border-mm-border grid place-items-center text-mm-coral-2">
-            <Check size={22} strokeWidth={2} />
-          </div>
-          <h1 className="font-sans font-semibold text-[clamp(22px,2.4vw,28px)] mb-2.5">
-            Check your inbox
-          </h1>
-          <p className="text-mm-ink-2 text-[15px] mb-6">
-            We sent a verification link to <b className="text-mm-ink">{signupDone}</b>. Click it to
-            activate your account and sign in.
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              setSignupDone(null); // drop the success screen — this instance is reused for /login
-              navigate("/login");
-            }}
-            className="w-full h-12 rounded-[12px] bg-mm-ink text-mm-bg text-sm font-medium inline-flex items-center justify-center gap-2"
-          >
-            Back to sign in
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="bg-transparent border-0 shadow-none rounded-none p-0 lg:bg-mm-surface lg:border lg:border-mm-border lg:rounded-3xl lg:shadow-[var(--mm-shadow-card)] lg:p-10 min-h-[560px] flex flex-col items-center">
@@ -165,14 +119,6 @@ const AuthForm = ({ copy, mode }) => {
         <p className="text-mm-ink-2 text-[15px] max-w-[360px] mb-7">
           {isSignUp ? t.signUpSub : t.signInSub}
         </p>
-
-        <OAuthRow copy={copy} mode={mode} />
-
-        <div className="flex items-center gap-3 my-[18px] text-mm-ink-3 font-mono font-medium text-[11px] tracking-[0.08em] uppercase">
-          <span className="flex-1 h-px bg-mm-border" />
-          {t.divider}
-          <span className="flex-1 h-px bg-mm-border" />
-        </div>
 
         {error && (
           <div className="mb-4 p-3 bg-[oklch(0.95_0.04_25)] border border-[oklch(0.85_0.10_25)] text-[oklch(0.42_0.18_25)] rounded-[10px] text-[13px] font-medium flex items-start gap-2 dark:bg-[oklch(0.30_0.10_25/0.4)] dark:border-[oklch(0.50_0.15_25/0.6)] dark:text-[oklch(0.85_0.10_25)]">

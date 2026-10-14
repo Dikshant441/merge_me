@@ -28,8 +28,7 @@ const resetEmailRateKey = (req: Request) => {
 };
 
 // ── POST /auth/signup ───────────────────────────────────────────
-// 202 (Accepted), not 201 — the user exists but isn't usable yet. We do NOT
-// set auth cookies here; the verification link does that.
+// Creates the account and signs the user in on this device (cookies set).
 router.post(
   "/signup",
   rateLimitFor("signup"),
@@ -42,10 +41,8 @@ router.post(
         );
       }
       const result = await AuthService.signup(parsed.data, ctx(req));
-      res.status(202).json({
-        user: result.user,
-        message: "Check your inbox for a verification link.",
-      });
+      setAuthCookies(res, result.accessToken, result.refreshToken);
+      res.status(201).json({ user: result.user });
     } catch (err) {
       next(err);
     }
@@ -65,25 +62,6 @@ router.post(
         );
       }
       const result = await AuthService.login(parsed.data, ctx(req));
-      setAuthCookies(res, result.accessToken, result.refreshToken);
-      res.status(200).json({ user: result.user });
-    } catch (err) {
-      next(err);
-    }
-  }
-);
-
-// ── POST /auth/verify-email ─────────────────────────────────────
-// The email link points at the SPA (/verify-email?token=...); the page POSTs
-// the token here. On success we set auth cookies and return the user.
-router.post(
-  "/verify-email",
-  rateLimitFor("verify"),
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const token = typeof req.body?.token === "string" ? req.body.token : "";
-      if (!token) return next(badRequest("MISSING_TOKEN", "Missing verification token"));
-      const result = await AuthService.confirmEmailVerification(token, ctx(req));
       setAuthCookies(res, result.accessToken, result.refreshToken);
       res.status(200).json({ user: result.user });
     } catch (err) {
@@ -226,8 +204,7 @@ router.post(
 
 // ── POST /auth/password-reset/confirm ───────────────────────────
 // On success the user is signed in on this device (cookies set) and every
-// other session is dead. Uses the `verify` limiter — separate instance, so
-// its counter doesn't share with /verify-email.
+// other session is dead. Uses the `verify` limiter.
 router.post(
   "/password-reset/confirm",
   rateLimitFor("verify"),
